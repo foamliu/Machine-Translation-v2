@@ -16,6 +16,8 @@
 
 可以从这里下载：[英中翻译数据集](https://challenger.ai/datasets/translation)
 
+![image](https://github.com/foamliu/Image-Captioning/raw/master/images/dataset.png)
+
 ## 用法
 
 ### 数据预处理
