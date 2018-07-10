@@ -5,7 +5,7 @@ from keras.models import Model
 from keras.utils import plot_model
 
 from config import hidden_size, max_token_length
-from config import vocab_size, embedding_size
+from config import vocab_size_zh, embedding_size
 
 
 def build_model():
@@ -26,7 +26,7 @@ def build_model():
     x = Concatenate(axis=1)(x)
     x = Bidirectional(LSTM(hidden_size, return_sequences=False))(x)
 
-    output = Dense(vocab_size, activation='softmax', name='output')(x)
+    output = Dense(vocab_size_zh, activation='softmax', name='output')(x)
 
     inputs = [image_input, text_input]
     model = Model(inputs=inputs, outputs=output)

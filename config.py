@@ -1,14 +1,12 @@
 import os
 
-img_rows, img_cols = 224, 224
-channel = 3
 batch_size = 256
 epochs = 10000
 patience = 50
 num_train_samples = 9903244
-num_valid_samples = 2102270
+num_valid_samples = 8000
 embedding_size = 300
-vocab_size = 17628
+vocab_size_zh = 675134
 max_token_length = 40
 num_image_features = 2048
 hidden_size = 256

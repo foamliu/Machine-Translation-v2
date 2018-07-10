@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from config import start_word, stop_word, unknown_word
 from config import train_folder, valid_folder, test_a_folder, test_b_folder
-from config import train_translation_folder, train_translation_zh_filename, train_translation_en_filename
+from config import train_translation_folder, train_translation_zh_filename
 
 
 def ensure_folder(folder):
@@ -30,14 +30,20 @@ def build_train_vocab_zh():
 
     print('building {} train vocab (zh)')
     vocab = set()
+    max_len = 0
     for line in tqdm(data):
         seg_list = jieba.cut(line)
         for word in seg_list:
             vocab.add(word)
+        length = sum(1 for item in seg_list)
+        if length > max_len:
+            max_len = length
 
     vocab.add(start_word)
     vocab.add(stop_word)
     vocab.add(unknown_word)
+
+    print('max_len(zh): ' + str(max_len))
 
     filename = 'data/vocab_train_zh.p'
     with open(filename, 'wb') as encoded_pickle:
@@ -61,4 +67,3 @@ if __name__ == '__main__':
 
     if not os.path.isfile('data/vocab_train_zh.p'):
         build_train_vocab_zh()
-
