@@ -34,7 +34,7 @@ def build_train_vocab_zh():
     max_len = 0
     longest_sentence = None
     for sentence in tqdm(data):
-        seg_list = jieba.cut(sentence)
+        seg_list = jieba.cut(sentence.strip())
         length = 0
         for word in seg_list:
             vocab.add(word)
@@ -68,7 +68,7 @@ def build_train_vocab_en():
     max_len = 0
     longest_sentence = None
     for sentence in tqdm(data):
-        tokens = nltk.word_tokenize(sentence)
+        tokens = nltk.word_tokenize(sentence.strip())
         for token in tokens:
             vocab.add(token)
         length = len(tokens)
