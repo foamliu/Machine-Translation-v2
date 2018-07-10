@@ -8,8 +8,8 @@ num_valid_samples = 8000
 embedding_size = 300
 vocab_size_en = 9494100
 vocab_size_zh = 675133
-max_token_length_en = 91
-max_token_length_zh = 276
+max_token_length_en = 100
+max_token_length_zh = 50
 hidden_size = 256
 
 
