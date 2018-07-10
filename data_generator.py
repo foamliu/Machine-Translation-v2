@@ -6,7 +6,7 @@ import numpy as np
 from keras.preprocessing import sequence
 from keras.utils import Sequence
 
-from config import batch_size, num_encoder_tokens, num_decoder_tokens, max_encoder_token_length, max_decoder_token_length
+from config import batch_size, vocab_size_en, vocab_size_zh, max_encoder_token_length, max_decoder_token_length
 
 
 class DataGenSequence(Sequence):
@@ -37,7 +37,7 @@ class DataGenSequence(Sequence):
 
         length = min(batch_size, (len(self.samples) - i))
         batch_image_input = np.empty((length, 2048), dtype=np.float32)
-        batch_y = np.empty((length, num_decoder_tokens), dtype=np.int32)
+        batch_y = np.empty((length, vocab_size_zh), dtype=np.int32)
         text_input = []
 
         for i_batch in range(length):
@@ -46,7 +46,7 @@ class DataGenSequence(Sequence):
             image_input = np.array(self.image_encoding[image_id])
             text_input.append(sample['input'])
             batch_image_input[i_batch] = image_input
-            batch_y[i_batch] = keras.utils.to_categorical(sample['output'], num_decoder_tokens)
+            batch_y[i_batch] = keras.utils.to_categorical(sample['output'], vocab_size_zh)
 
         batch_text_input = sequence.pad_sequences(text_input, maxlen=max_encoder_token_length, padding='post')
         return [batch_image_input, batch_text_input], batch_y

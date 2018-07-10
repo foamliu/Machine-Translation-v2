@@ -6,9 +6,9 @@ patience = 50
 num_train_samples = 9903244
 num_valid_samples = 8000
 embedding_size = 300
-num_encoder_tokens = 0
-num_decoder_tokens = 675133
-max_encoder_token_length = 0
+vocab_size_en = 9494100
+vocab_size_zh = 675133
+max_encoder_token_length = 91
 max_decoder_token_length = 276
 hidden_size = 256
 
