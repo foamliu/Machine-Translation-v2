@@ -6,10 +6,12 @@ patience = 50
 num_train_samples = 9903244
 num_valid_samples = 8000
 embedding_size = 300
-vocab_size_zh = 675134
-max_token_length = 40
-num_image_features = 2048
+num_encoder_tokens = 0
+num_decoder_tokens = 675134
+max_encoder_token_length = 0
+max_decoder_token_length = 372
 hidden_size = 256
+
 
 train_folder = 'data/ai_challenger_translation_train_20170912'
 valid_folder = 'data/ai_challenger_translation_validation_20170912'

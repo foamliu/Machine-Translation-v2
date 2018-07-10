@@ -37,7 +37,7 @@ def build_train_vocab_zh():
         length = 0
         for word in seg_list:
             vocab.add(word)
-            length += 1
+            length = length + 1
 
         if length > max_len:
             max_len = length
@@ -102,3 +102,6 @@ if __name__ == '__main__':
 
     if not os.path.isfile('data/vocab_train_zh.p'):
         build_train_vocab_zh()
+
+    if not os.path.isfile('data/vocab_train_en.p'):
+        build_train_vocab_en()

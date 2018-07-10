@@ -1,35 +1,34 @@
 import keras.backend as K
 import tensorflow as tf
-from keras.layers import Input, Dense, LSTM, Concatenate, Embedding, RepeatVector, Bidirectional, TimeDistributed
+from keras.layers import Input, Dense, LSTM
 from keras.models import Model
 from keras.utils import plot_model
 
-from config import hidden_size, max_token_length
-from config import vocab_size_zh, embedding_size
+from config import hidden_size, num_encoder_tokens, num_decoder_tokens
 
 
 def build_model():
-    # word embedding
-    text_input = Input(shape=(max_token_length,), dtype='int32')
-    x = Embedding(input_dim=vocab_size, output_dim=embedding_size)(text_input)
-    x = LSTM(256, return_sequences=True)(x)
-    text_embedding = TimeDistributed(Dense(300))(x)
+    # Define an input sequence and process it.
+    encoder_inputs = Input(shape=(None, num_encoder_tokens))
+    encoder = LSTM(hidden_size, return_state=True)
+    encoder_outputs, state_h, state_c = encoder(encoder_inputs)
+    # We discard `encoder_outputs` and only keep the states.
+    encoder_states = [state_h, state_c]
 
-    # image embedding
-    image_input = Input(shape=(2048,))
-    x = Dense(embedding_size, activation='relu', name='image_embedding')(image_input)
-    # the image I is only input once
-    image_embedding = RepeatVector(1)(x)
+    # Set up the decoder, using `encoder_states` as initial state.
+    decoder_inputs = Input(shape=(None, num_decoder_tokens))
+    # We set up our decoder to return full output sequences,
+    # and to return internal states as well. We don't use the
+    # return states in the training model, but we will use them in inference.
+    decoder_lstm = LSTM(hidden_size, return_sequences=True, return_state=True)
+    decoder_outputs, _, _ = decoder_lstm(decoder_inputs,
+                                         initial_state=encoder_states)
+    decoder_dense = Dense(num_decoder_tokens, activation='softmax')
+    decoder_outputs = decoder_dense(decoder_outputs)
 
-    # language model
-    x = [image_embedding, text_embedding]
-    x = Concatenate(axis=1)(x)
-    x = Bidirectional(LSTM(hidden_size, return_sequences=False))(x)
-
-    output = Dense(vocab_size_zh, activation='softmax', name='output')(x)
-
-    inputs = [image_input, text_input]
-    model = Model(inputs=inputs, outputs=output)
+    # Define the model that will turn
+    # `encoder_input_data` & `decoder_input_data` into `decoder_target_data`
+    model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
     return model
 
 
