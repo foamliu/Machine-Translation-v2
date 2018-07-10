@@ -7,9 +7,9 @@ num_train_samples = 9903244
 num_valid_samples = 8000
 embedding_size = 300
 num_encoder_tokens = 0
-num_decoder_tokens = 675134
+num_decoder_tokens = 675133
 max_encoder_token_length = 0
-max_decoder_token_length = 372
+max_decoder_token_length = 276
 hidden_size = 256
 
 
