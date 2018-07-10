@@ -32,6 +32,7 @@ def build_train_vocab_zh():
     print('building {} train vocab (zh)')
     vocab = set()
     max_len = 0
+    longest_sentence = None
     for sentence in tqdm(data):
         seg_list = jieba.cut(sentence)
         length = 0
@@ -40,19 +41,20 @@ def build_train_vocab_zh():
             length = length + 1
 
         if length > max_len:
+            longest_sentence = sentence
             max_len = length
 
     vocab.add(start_word)
     vocab.add(stop_word)
     vocab.add(unknown_word)
-    vocab = sorted(vocab)
 
     print('max_len(zh): ' + str(max_len))
     print('len(vocab): ' + str(len(vocab)))
+    print('longest_sentence: ' + longest_sentence)
 
     filename = 'data/vocab_train_zh.p'
     with open(filename, 'wb') as encoded_pickle:
-        pickle.dump(vocab, encoded_pickle)
+        pickle.dump(sorted(vocab), encoded_pickle)
 
 
 def build_train_vocab_en():
@@ -64,25 +66,27 @@ def build_train_vocab_en():
     print('building {} train vocab (en)')
     vocab = set()
     max_len = 0
+    longest_sentence = None
     for sentence in tqdm(data):
         tokens = nltk.word_tokenize(sentence)
         for token in tokens:
             vocab.add(token)
         length = len(tokens)
         if length > max_len:
+            longest_sentence = sentence
             max_len = length
 
     vocab.add(start_word)
     vocab.add(stop_word)
     vocab.add(unknown_word)
-    vocab = sorted(vocab)
 
     print('max_len(en): ' + str(max_len))
     print('len(vocab): ' + str(len(vocab)))
+    print('longest_sentence: ' + longest_sentence)
 
     filename = 'data/vocab_train_en.p'
     with open(filename, 'wb') as encoded_pickle:
-        pickle.dump(vocab, encoded_pickle)
+        pickle.dump(sorted(vocab), encoded_pickle)
 
 
 if __name__ == '__main__':
