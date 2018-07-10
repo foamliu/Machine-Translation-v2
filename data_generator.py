@@ -6,16 +6,16 @@ import numpy as np
 from keras.preprocessing import sequence
 from keras.utils import Sequence
 
-from config import batch_size, max_token_length, vocab_size
+from config import batch_size, num_encoder_tokens, num_decoder_tokens, max_encoder_token_length, max_decoder_token_length
 
 
 class DataGenSequence(Sequence):
     def __init__(self, usage):
         self.usage = usage
 
-        vocab = pickle.load(open('data/vocab_train.p', 'rb'))
-        self.idx2word = sorted(vocab)
-        self.word2idx = dict(zip(self.idx2word, range(len(vocab))))
+        vocab_zh = pickle.load(open('data/vocab_train_zh.p', 'rb'))
+        self.idx2word_zh = sorted(vocab_zh)
+        self.word2idx_zh = dict(zip(self.idx2word_zh, range(len(vocab_zh))))
 
         filename = 'data/encoded_{}_images.p'.format(usage)
         self.image_encoding = pickle.load(open(filename, 'rb'))
@@ -37,7 +37,7 @@ class DataGenSequence(Sequence):
 
         length = min(batch_size, (len(self.samples) - i))
         batch_image_input = np.empty((length, 2048), dtype=np.float32)
-        batch_y = np.empty((length, vocab_size), dtype=np.int32)
+        batch_y = np.empty((length, num_decoder_tokens), dtype=np.int32)
         text_input = []
 
         for i_batch in range(length):
@@ -46,9 +46,9 @@ class DataGenSequence(Sequence):
             image_input = np.array(self.image_encoding[image_id])
             text_input.append(sample['input'])
             batch_image_input[i_batch] = image_input
-            batch_y[i_batch] = keras.utils.to_categorical(sample['output'], vocab_size)
+            batch_y[i_batch] = keras.utils.to_categorical(sample['output'], num_decoder_tokens)
 
-        batch_text_input = sequence.pad_sequences(text_input, maxlen=max_token_length, padding='post')
+        batch_text_input = sequence.pad_sequences(text_input, maxlen=max_encoder_token_length, padding='post')
         return [batch_image_input, batch_text_input], batch_y
 
     def on_epoch_end(self):
