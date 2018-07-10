@@ -34,17 +34,21 @@ def build_train_vocab_zh():
     max_len = 0
     for sentence in tqdm(data):
         seg_list = jieba.cut(sentence)
+        length = 0
         for word in seg_list:
             vocab.add(word)
-        length = sum(1 for item in seg_list)
+            length += 1
+
         if length > max_len:
             max_len = length
 
     vocab.add(start_word)
     vocab.add(stop_word)
     vocab.add(unknown_word)
+    vocab = sorted(vocab)
 
     print('max_len(zh): ' + str(max_len))
+    print('len(vocab): ' + str(len(vocab)))
 
     filename = 'data/vocab_train_zh.p'
     with open(filename, 'wb') as encoded_pickle:
@@ -71,8 +75,10 @@ def build_train_vocab_en():
     vocab.add(start_word)
     vocab.add(stop_word)
     vocab.add(unknown_word)
+    vocab = sorted(vocab)
 
     print('max_len(en): ' + str(max_len))
+    print('len(vocab): ' + str(len(vocab)))
 
     filename = 'data/vocab_train_en.p'
     with open(filename, 'wb') as encoded_pickle:
