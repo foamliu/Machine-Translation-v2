@@ -49,7 +49,7 @@ def build_train_vocab_zh():
             max_len = length
 
     counter = Counter(vocab)
-    zh_model_keys = [word.lower() for word in zh_model.vocab.keys()]
+    zh_model_keys = set([word.lower() for word in zh_model.vocab.keys()])
     covered_count = 0
     for word in tqdm(counter.keys()):
         if word in zh_model_keys:
@@ -95,7 +95,7 @@ def build_train_vocab_en():
             max_len = length
 
     counter = Counter(vocab)
-    en_model_keys = [word.lower() for word in en_model.vocab.keys()]
+    en_model_keys = set([word.lower() for word in en_model.vocab.keys()])
     covered_count = 0
     for word in tqdm(counter.keys()):
         if word in en_model_keys:
