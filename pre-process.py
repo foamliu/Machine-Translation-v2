@@ -45,15 +45,15 @@ def build_train_vocab_zh():
             length = length + 1
 
         if length > max_len:
-            longest_sentence = sentence
+            longest_sentence = '/'.join(seg_list)
             max_len = length
 
     counter = Counter(vocab)
-    keys = zh_model.vocab.keys()
+    zh_model_keys = [word.lower() for word in zh_model.vocab.keys()]
     covered_count = 0
-    for key in tqdm(counter.keys()):
-        if key in keys:
-            covered_count += counter[key]
+    for word in tqdm(counter.keys()):
+        if word in zh_model_keys:
+            covered_count += counter[word]
 
     total_count = len(list(counter.elements()))
     vocab = list(zh_model.vocab.keys())
@@ -62,7 +62,8 @@ def build_train_vocab_zh():
     vocab.append(unknown_word)
 
     print('max_len(zh): ' + str(max_len))
-    print('len(vocab): ' + str(len(vocab)))
+    print('count of words in text (zh): ' + str(len(list(counter.keys()))))
+    print('fasttext vocab size (zh): ' + str(len(vocab)))
     print('coverage: ' + str(covered_count / total_count))
     print('longest_sentence: ' + longest_sentence)
 
@@ -72,7 +73,7 @@ def build_train_vocab_zh():
 
 
 def build_train_vocab_en():
-    print('loading fasttext zh word embedding')
+    print('loading fasttext en word embedding')
     en_model = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
     translation_path = os.path.join(train_translation_folder, train_translation_zh_filename)
 
@@ -90,15 +91,15 @@ def build_train_vocab_en():
 
         length = len(tokens)
         if length > max_len:
-            longest_sentence = sentence
+            longest_sentence = '/'.join(tokens)
             max_len = length
 
     counter = Counter(vocab)
-    keys = en_model.vocab.keys()
+    en_model_keys = [word.lower() for word in en_model.vocab.keys()]
     covered_count = 0
-    for key in tqdm(counter.keys()):
-        if key in keys:
-            covered_count += counter[key]
+    for word in tqdm(counter.keys()):
+        if word in en_model_keys:
+            covered_count += counter[word]
 
     total_count = len(list(counter.elements()))
     vocab = list(en_model.vocab.keys())
@@ -107,7 +108,8 @@ def build_train_vocab_en():
     vocab.append(unknown_word)
 
     print('max_len(zh): ' + str(max_len))
-    print('len(vocab): ' + str(len(vocab)))
+    print('count of words in text (en): ' + str(len(list(counter.keys()))))
+    print('fasttext vocab size (en): ' + str(len(vocab)))
     print('coverage: ' + str(covered_count / total_count))
     print('longest_sentence: ' + longest_sentence)
 
