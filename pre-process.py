@@ -5,9 +5,10 @@ from collections import Counter
 
 import jieba
 import nltk
+from gensim.models import KeyedVectors
 from tqdm import tqdm
 
-from config import start_word, stop_word, unknown_word, vocab_size_en, vocab_size_zh
+from config import start_word, stop_word, unknown_word
 from config import train_folder, valid_folder, test_a_folder, test_b_folder
 from config import train_translation_folder, train_translation_zh_filename
 
@@ -25,16 +26,17 @@ def extract(folder):
 
 
 def build_train_vocab_zh():
+    print('loading fasttext zh word embedding')
+    zh_model = KeyedVectors.load_word2vec_format('data/wiki.zh.vec')
     translation_path = os.path.join(train_translation_folder, train_translation_zh_filename)
 
     with open(translation_path, 'r') as f:
         data = f.readlines()
 
-    print('building {} train vocab (zh)')
-
     vocab = []
     max_len = 0
     longest_sentence = None
+    print('scanning train data (zh)')
     for sentence in tqdm(data):
         seg_list = jieba.cut(sentence.strip().lower())
         length = 0
@@ -47,17 +49,22 @@ def build_train_vocab_zh():
             max_len = length
 
     counter = Counter(vocab)
-    common = counter.most_common(vocab_size_zh - 3)
-    common_count = sum([item[1] for item in common])
+    keys = zh_model.vocab.keys()
+    covered_count = 0
+    for ele in tqdm(counter.elements()):
+        key, count = ele
+        if key in keys:
+            covered_count += count
+
     total_count = len(list(counter.elements()))
-    vocab = [item[0] for item in common]
+    vocab = list(zh_model.vocab.keys())
     vocab.append(start_word)
     vocab.append(stop_word)
     vocab.append(unknown_word)
 
     print('max_len(zh): ' + str(max_len))
     print('len(vocab): ' + str(len(vocab)))
-    print('coverage: ' + str(common_count / total_count))
+    print('coverage: ' + str(covered_count / total_count))
     print('longest_sentence: ' + longest_sentence)
 
     filename = 'data/vocab_train_zh.p'
@@ -66,37 +73,44 @@ def build_train_vocab_zh():
 
 
 def build_train_vocab_en():
+    print('loading fasttext zh word embedding')
+    en_model = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
     translation_path = os.path.join(train_translation_folder, train_translation_zh_filename)
 
     with open(translation_path, 'r') as f:
         data = f.readlines()
 
-    print('building {} train vocab (en)')
-
     vocab = []
     max_len = 0
     longest_sentence = None
+    print('building {} train vocab (en)')
     for sentence in tqdm(data):
         tokens = nltk.word_tokenize(sentence.strip().lower())
         for token in tokens:
             vocab.append(token)
+
         length = len(tokens)
         if length > max_len:
             longest_sentence = sentence
             max_len = length
 
     counter = Counter(vocab)
-    common = counter.most_common(vocab_size_en - 3)
-    common_count = sum([item[1] for item in common])
+    keys = en_model.vocab.keys()
+    covered_count = 0
+    for ele in tqdm(counter.elements()):
+        key, count = ele
+        if key in keys:
+            covered_count += count
+
     total_count = len(list(counter.elements()))
-    vocab = [item[0] for item in common]
+    vocab = list(en_model.vocab.keys())
     vocab.append(start_word)
     vocab.append(stop_word)
     vocab.append(unknown_word)
 
-    print('max_len(en): ' + str(max_len))
+    print('max_len(zh): ' + str(max_len))
     print('len(vocab): ' + str(len(vocab)))
-    print('coverage: ' + str(common_count / total_count))
+    print('coverage: ' + str(covered_count / total_count))
     print('longest_sentence: ' + longest_sentence)
 
     filename = 'data/vocab_train_en.p'
