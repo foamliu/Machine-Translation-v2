@@ -1,12 +1,13 @@
 import os
 import pickle
 import zipfile
+from collections import Counter
 
 import jieba
 import nltk
 from tqdm import tqdm
 
-from config import start_word, stop_word, unknown_word
+from config import start_word, stop_word, unknown_word, vocab_size_en, vocab_size_zh
 from config import train_folder, valid_folder, test_a_folder, test_b_folder
 from config import train_translation_folder, train_translation_zh_filename
 
@@ -30,26 +31,33 @@ def build_train_vocab_zh():
         data = f.readlines()
 
     print('building {} train vocab (zh)')
-    vocab = set()
+
+    vocab = []
     max_len = 0
     longest_sentence = None
     for sentence in tqdm(data):
         seg_list = jieba.cut(sentence.strip().lower())
         length = 0
         for word in seg_list:
-            vocab.add(word)
+            vocab.append(word)
             length = length + 1
 
         if length > max_len:
             longest_sentence = sentence
             max_len = length
 
-    vocab.add(start_word)
-    vocab.add(stop_word)
-    vocab.add(unknown_word)
+    counter = Counter(vocab)
+    common = counter.most_common(vocab_size_zh - 3)
+    common_count = sum([item[1] for item in common])
+    total_count = len(list(counter.elements()))
+    vocab = [item[0] for item in common]
+    vocab.append(start_word)
+    vocab.append(stop_word)
+    vocab.append(unknown_word)
 
     print('max_len(zh): ' + str(max_len))
     print('len(vocab): ' + str(len(vocab)))
+    print('coverage: ' + str(common_count / total_count))
     print('longest_sentence: ' + longest_sentence)
 
     filename = 'data/vocab_train_zh.p'
@@ -64,24 +72,31 @@ def build_train_vocab_en():
         data = f.readlines()
 
     print('building {} train vocab (en)')
-    vocab = set()
+
+    vocab = []
     max_len = 0
     longest_sentence = None
     for sentence in tqdm(data):
         tokens = nltk.word_tokenize(sentence.strip().lower())
         for token in tokens:
-            vocab.add(token)
+            vocab.append(token)
         length = len(tokens)
         if length > max_len:
             longest_sentence = sentence
             max_len = length
 
-    vocab.add(start_word)
-    vocab.add(stop_word)
-    vocab.add(unknown_word)
+    counter = Counter(vocab)
+    common = counter.most_common(vocab_size_en - 3)
+    common_count = sum([item[1] for item in common])
+    total_count = len(list(counter.elements()))
+    vocab = [item[0] for item in common]
+    vocab.append(start_word)
+    vocab.append(stop_word)
+    vocab.append(unknown_word)
 
     print('max_len(en): ' + str(max_len))
     print('len(vocab): ' + str(len(vocab)))
+    print('coverage: ' + str(common_count / total_count))
     print('longest_sentence: ' + longest_sentence)
 
     filename = 'data/vocab_train_en.p'
