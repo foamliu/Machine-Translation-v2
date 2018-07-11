@@ -27,7 +27,7 @@ def extract(folder):
 
 def build_train_vocab_zh():
     print('loading fasttext zh word embedding')
-    zh_model = KeyedVectors.load_word2vec_format('data/wiki.zh.vec')
+    zh_model = KeyedVectors.load_word2vec_format('data/sgns.merge.char')
     translation_path = os.path.join(train_translation_folder, train_translation_zh_filename)
 
     with open(translation_path, 'r') as f:
@@ -133,8 +133,8 @@ if __name__ == '__main__':
     if not os.path.isdir(test_b_folder):
         extract(test_b_folder)
 
-    # if not os.path.isfile('data/vocab_train_zh.p'):
-    build_train_vocab_zh()
+    if not os.path.isfile('data/vocab_train_zh.p'):
+        build_train_vocab_zh()
 
-    # if not os.path.isfile('data/vocab_train_en.p'):
-    build_train_vocab_en()
+    if not os.path.isfile('data/vocab_train_en.p'):
+        build_train_vocab_en()
