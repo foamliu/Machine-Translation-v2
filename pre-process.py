@@ -51,10 +51,9 @@ def build_train_vocab_zh():
     counter = Counter(vocab)
     keys = zh_model.vocab.keys()
     covered_count = 0
-    for ele in tqdm(counter.elements()):
-        key, count = ele
+    for key in tqdm(counter.keys()):
         if key in keys:
-            covered_count += count
+            covered_count += counter[key]
 
     total_count = len(list(counter.elements()))
     vocab = list(zh_model.vocab.keys())
@@ -97,10 +96,9 @@ def build_train_vocab_en():
     counter = Counter(vocab)
     keys = en_model.vocab.keys()
     covered_count = 0
-    for ele in tqdm(counter.elements()):
-        key, count = ele
+    for key in tqdm(counter.keys()):
         if key in keys:
-            covered_count += count
+            covered_count += counter[key]
 
     total_count = len(list(counter.elements()))
     vocab = list(en_model.vocab.keys())
