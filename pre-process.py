@@ -119,8 +119,8 @@ if __name__ == '__main__':
     if not os.path.isdir(test_b_folder):
         extract(test_b_folder)
 
-    if not os.path.isfile('data/vocab_train_zh.p'):
-        build_train_vocab_zh()
+    # if not os.path.isfile('data/vocab_train_zh.p'):
+    build_train_vocab_zh()
 
-    if not os.path.isfile('data/vocab_train_en.p'):
-        build_train_vocab_en()
+    # if not os.path.isfile('data/vocab_train_en.p'):
+    build_train_vocab_en()
