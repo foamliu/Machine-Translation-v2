@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 batch_size = 256
 epochs = 10000
@@ -27,3 +28,6 @@ valid_translation_zh_filename = 'valid.zh'
 start_word = '<start>'
 stop_word = '<end>'
 unknown_word = '<UNK>'
+start_embedding = np.zeros((embedding_size,))
+stop_embedding = np.ones((embedding_size,))
+unknown_embedding = np.ones((embedding_size,)) / 2

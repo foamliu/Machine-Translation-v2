@@ -186,8 +186,8 @@ def build_samples():
                     v = word_vectors_en[word]
                 except (NameError, KeyError):
                     word = unknown_word
-                input_en.append(word2idx_en[word])
-            input_en.append(word2idx_en[stop_word])
+                input_en.append(word)
+            input_en.append(stop_word)
 
             sentence_zh = data_zh[idx].strip().lower()
             seg_list = jieba.cut(sentence_zh)
@@ -199,10 +199,10 @@ def build_samples():
                 except (NameError, KeyError):
                     word = unknown_word
 
-                input_zh.append(word2idx_zh[last_word])
+                input_zh.append(last_word)
                 samples.append({'input_en': list(input_en), 'input_zh': list(input_zh), 'output': word2idx_zh[word]})
                 last_word = word
-            input_zh.append(word2idx_zh[last_word])
+            input_zh.append(last_word)
             samples.append({'input_en': list(input_en), 'input_zh': list(input_zh), 'output': word2idx_zh[stop_word]})
 
         with open(filename, 'wb') as f:
