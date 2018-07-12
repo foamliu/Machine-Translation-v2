@@ -4,10 +4,10 @@ import pickle
 import keras
 import numpy as np
 from gensim.models import KeyedVectors
-from keras.preprocessing import sequence
 from keras.utils import Sequence
 
-from config import batch_size, vocab_size_zh, max_token_length_en, max_token_length_zh, unknown_word, unknown_embedding
+from config import batch_size, vocab_size_zh, max_token_length_en, max_token_length_zh, unknown_word, unknown_embedding, \
+    embedding_size
 
 
 class DataGenSequence(Sequence):
@@ -44,31 +44,27 @@ class DataGenSequence(Sequence):
 
         length = min(batch_size, (len(self.samples) - i))
         batch_y = np.empty((length, vocab_size_zh), dtype=np.int32)
-        text_embedding_en = []
-        text_embedding_zh = []
+
+        batch_text_embedding_en = np.zeros((length, max_token_length_en, embedding_size), np.float32)
+        batch_text_embedding_zh = np.zeros((length, max_token_length_zh, embedding_size), np.float32)
 
         for i_batch in range(length):
             sample = self.samples[i + i_batch]
-            input_en = []
-            for word in sample['input_en']:
-                if word == unknown_word:
-                    input_en.append(unknown_embedding)
-                else:
-                    input_en.append(self.word_vectors_en[word])
 
-            text_embedding_en.append(input_en)
-            input_zh = []
-            for word in sample['input_zh']:
+            for idx, word in enumerate(['input_en']):
                 if word == unknown_word:
-                    input_zh.append(unknown_embedding)
+                    batch_text_embedding_en[i_batch, idx] = unknown_embedding
                 else:
-                    input_zh.append(self.word_vectors_zh[word])
-            text_embedding_zh.append(input_zh)
+                    batch_text_embedding_en[i_batch, idx] = self.word_vectors_en[word]
+
+            for idx, word in enumerate(sample['input_zh']):
+                if word == unknown_word:
+                    batch_text_embedding_zh[i_batch, idx] = unknown_embedding
+                else:
+                    batch_text_embedding_zh[i_batch, idx] = self.word_vectors_zh[word]
 
             batch_y[i_batch] = keras.utils.to_categorical(sample['output'], vocab_size_zh)
 
-        batch_text_embedding_en = sequence.pad_sequences(text_embedding_en, maxlen=max_token_length_en, padding='post')
-        batch_text_embedding_zh = sequence.pad_sequences(text_embedding_zh, maxlen=max_token_length_zh, padding='post')
         return [batch_text_embedding_en, batch_text_embedding_zh], batch_y
 
     def on_epoch_end(self):
