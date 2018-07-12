@@ -147,7 +147,7 @@ def extract_valid_data():
         out_file.writelines(data_zh)
 
 
-def build_samples(usage):
+def build_samples():
     print('loading fasttext en word embedding')
     word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
     print('loading zh word embedding')
