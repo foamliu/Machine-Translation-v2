@@ -1,8 +1,9 @@
 import os
 import pickle
+import xml.etree.ElementTree
 import zipfile
 from collections import Counter
-import xml.etree.ElementTree
+
 import jieba
 import nltk
 from gensim.models import KeyedVectors
@@ -58,7 +59,7 @@ def build_train_vocab_zh():
             v = word_vectors[word]
             covered_count += counter[word]
         except (NameError, KeyError):
-            #print(word)
+            # print(word)
             pass
 
     vocab = list(word_vectors.vocab.keys())
@@ -108,7 +109,7 @@ def build_train_vocab_en():
             v = word_vectors[word]
             covered_count += counter[word]
         except (NameError, KeyError):
-            #print(word)
+            # print(word)
             pass
 
     vocab = list(word_vectors.vocab.keys())
@@ -144,60 +145,6 @@ def extract_valid_data():
     data_zh = [elem.text.strip() for elem in root.iter() if elem.tag == 'seg']
     with open(os.path.join(valid_translation_folder, 'valid.zh'), 'w') as out_file:
         out_file.writelines(data_zh)
-
-
-def build_train_samples():
-    print('loading fasttext en word embedding')
-    word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
-    translation_path_en = os.path.join(train_translation_folder, train_translation_en_filename)
-    with open(translation_path_en, 'r') as f:
-        data_en = f.readlines()
-    vocab_en = pickle.load(open('data/vocab_train_en.p', 'rb'))
-    idx2word_en = sorted(vocab_en)
-    word2idx_en = dict(zip(idx2word_en, range(len(vocab_en))))
-
-    print('loading zh word embedding')
-    word_vectors_zh = KeyedVectors.load_word2vec_format('data/sgns.merge.char')
-    translation_path_zh = os.path.join(train_translation_folder, train_translation_zh_filename)
-    with open(translation_path_zh, 'r') as f:
-        data_zh = f.readlines()
-    vocab_zh = pickle.load(open('data/vocab_train_zh.p', 'rb'))
-    idx2word_zh = sorted(vocab_zh)
-    word2idx_zh = dict(zip(idx2word_zh, range(len(vocab_zh))))
-
-    print('building train samples')
-    samples = []
-    for idx, sentence_en in tqdm(enumerate(data_en)):
-        input_en = []
-        tokens = nltk.word_tokenize(sentence_en.strip().lower())
-        for word in tokens:
-            try:
-                v = word_vectors_en[word]
-            except (NameError, KeyError):
-                word = unknown_word
-            input_en.append(word2idx_en[word])
-        input_en.append(word2idx_en[stop_word])
-
-        sentence_zh = data_zh[idx].strip().lower()
-        seg_list = jieba.cut(sentence_zh)
-        input_zh = []
-        last_word = start_word
-        for j, word in enumerate(seg_list):
-            try:
-                v = word_vectors_zh[word]
-            except (NameError, KeyError):
-                word = unknown_word
-
-            input_zh.append(word2idx_zh[last_word])
-            samples.append({'input_en': list(input_en), 'input_zh': list(input_zh), 'output': word2idx_zh[word]})
-            last_word = word
-        input_zh.append(word2idx_zh[last_word])
-        samples.append({'input_en': list(input_en), 'input_zh': list(input_zh), 'output': word2idx_zh[stop_word]})
-
-    filename = 'data/samples_train.p'
-    with open(filename, 'wb') as f:
-        pickle.dump(samples, f)
-    print('{} samples created.'.format(len(samples)))
 
 
 def build_samples(usage):
