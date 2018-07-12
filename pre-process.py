@@ -56,7 +56,7 @@ def build_train_vocab_zh():
         try:
             v = word_vectors[word]
             covered_count += counter[word]
-        except NameError:
+        except (NameError, KeyError):
             print(word)
 
     vocab = list(word_vectors.vocab.keys())
