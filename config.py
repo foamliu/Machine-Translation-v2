@@ -21,8 +21,8 @@ train_translation_folder = os.path.join(train_folder, 'translation_train_2017091
 valid_translation_folder = os.path.join(valid_folder, 'translation_validation_20170912')
 train_translation_en_filename = 'train.en'
 train_translation_zh_filename = 'train.zh'
-valid_translation_en_filename = 'valid.en-zh.en.sgm'
-valid_translation_zh_filename = 'valid.en-zh.zh.sgm'
+valid_translation_en_filename = 'valid.en'
+valid_translation_zh_filename = 'valid.zh'
 
 start_word = '<start>'
 stop_word = '<end>'
