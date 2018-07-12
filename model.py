@@ -9,17 +9,17 @@ from config import hidden_size, vocab_size_zh, embedding_size, max_token_length_
 
 def build_model():
     en_input = Input(shape=(max_token_length_en, embedding_size), dtype='float32')
-    x = LSTM(hidden_size, return_sequences=False)(en_input)
+    x = LSTM(hidden_size, return_sequences=False, implementation=2)(en_input)
     x = Dense(embedding_size)(x)
     en_embedding = RepeatVector(1)(x)
 
     zh_input = Input(shape=(max_token_length_zh, embedding_size), dtype='float32')
-    x = LSTM(hidden_size, return_sequences=True)(zh_input)
+    x = LSTM(hidden_size, return_sequences=True, implementation=2)(zh_input)
     zh_embedding = TimeDistributed(Dense(embedding_size))(x)
 
     x = [en_embedding, zh_embedding]
     x = Concatenate(axis=1)(x)
-    x = Bidirectional(LSTM(hidden_size, return_sequences=False))(x)
+    x = Bidirectional(LSTM(hidden_size, return_sequences=False, implementation=2))(x)
 
     output = Dense(vocab_size_zh, activation='softmax', name='output')(x)
 
