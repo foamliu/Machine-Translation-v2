@@ -150,7 +150,7 @@ def extract_valid_data():
 def build_samples():
     print('loading fasttext en word embedding')
     word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
-    print('loading zh word embedding')
+    print('loading Chinese-Word-Vectors')
     word_vectors_zh = KeyedVectors.load_word2vec_format('data/sgns.merge.char')
 
     for usage in ['train', 'valid']:
@@ -166,12 +166,10 @@ def build_samples():
         print('loading {} texts and vocab'.format(usage))
         with open(translation_path_en, 'r') as f:
             data_en = f.readlines()
-        vocab_en = pickle.load(open('data/vocab_train_en.p', 'rb'))
-        idx2word_en = sorted(vocab_en)
-        word2idx_en = dict(zip(idx2word_en, range(len(vocab_en))))
 
         with open(translation_path_zh, 'r') as f:
             data_zh = f.readlines()
+
         vocab_zh = pickle.load(open('data/vocab_train_zh.p', 'rb'))
         idx2word_zh = sorted(vocab_zh)
         word2idx_zh = dict(zip(idx2word_zh, range(len(vocab_zh))))
