@@ -57,7 +57,8 @@ def build_train_vocab_zh():
             v = word_vectors[word]
             covered_count += counter[word]
         except (NameError, KeyError):
-            print(word)
+            #print(word)
+            pass
 
     vocab = list(word_vectors.vocab.keys())
     vocab.append(start_word)
@@ -106,7 +107,8 @@ def build_train_vocab_en():
             v = word_vectors[word]
             covered_count += counter[word]
         except (NameError, KeyError):
-            print(word)
+            #print(word)
+            pass
 
     vocab = list(word_vectors.vocab.keys())
     vocab.append(start_word)
