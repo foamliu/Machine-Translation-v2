@@ -27,7 +27,7 @@ def extract(folder):
 
 def build_train_vocab_zh():
     print('loading fasttext zh word embedding')
-    zh_model = KeyedVectors.load_word2vec_format('data/sgns.merge.char')
+    word_vectors = KeyedVectors.load_word2vec_format('data/sgns.merge.char')
     translation_path = os.path.join(train_translation_folder, train_translation_zh_filename)
 
     with open(translation_path, 'r') as f:
@@ -49,14 +49,17 @@ def build_train_vocab_zh():
             max_len = length
 
     counter = Counter(vocab)
-    zh_model_keys = set([word.lower() for word in zh_model.vocab.keys()])
+    total_count = 0
     covered_count = 0
     for word in tqdm(counter.keys()):
-        if word in zh_model_keys:
+        total_count += counter[word]
+        try:
+            v = word_vectors[word]
             covered_count += counter[word]
+        except NameError:
+            print(word)
 
-    total_count = len(list(counter.elements()))
-    vocab = list(zh_model.vocab.keys())
+    vocab = list(word_vectors.vocab.keys())
     vocab.append(start_word)
     vocab.append(stop_word)
     vocab.append(unknown_word)
@@ -74,7 +77,7 @@ def build_train_vocab_zh():
 
 def build_train_vocab_en():
     print('loading fasttext en word embedding')
-    en_model = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
+    word_vectors = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
     translation_path = os.path.join(train_translation_folder, train_translation_zh_filename)
 
     with open(translation_path, 'r') as f:
@@ -95,14 +98,17 @@ def build_train_vocab_en():
             max_len = length
 
     counter = Counter(vocab)
-    en_model_keys = set([word.lower() for word in en_model.vocab.keys()])
+    total_count = 0
     covered_count = 0
     for word in tqdm(counter.keys()):
-        if word in en_model_keys:
+        total_count += counter[word]
+        try:
+            v = word_vectors[word]
             covered_count += counter[word]
+        except NameError:
+            print(word)
 
-    total_count = len(list(counter.elements()))
-    vocab = list(en_model.vocab.keys())
+    vocab = list(word_vectors.vocab.keys())
     vocab.append(start_word)
     vocab.append(stop_word)
     vocab.append(unknown_word)
