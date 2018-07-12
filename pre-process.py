@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from config import start_word, stop_word, unknown_word
 from config import train_folder, valid_folder, test_a_folder, test_b_folder
-from config import train_translation_folder, train_translation_zh_filename
+from config import train_translation_folder, train_translation_zh_filename, train_translation_en_filename
 
 
 def ensure_folder(folder):
@@ -78,7 +78,7 @@ def build_train_vocab_zh():
 def build_train_vocab_en():
     print('loading fasttext en word embedding')
     word_vectors = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
-    translation_path = os.path.join(train_translation_folder, train_translation_zh_filename)
+    translation_path = os.path.join(train_translation_folder, train_translation_en_filename)
 
     with open(translation_path, 'r') as f:
         data = f.readlines()
