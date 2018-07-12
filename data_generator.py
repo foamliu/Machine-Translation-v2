@@ -9,24 +9,16 @@ from keras.utils import Sequence
 from config import batch_size, vocab_size_zh, max_token_length_en, max_token_length_zh, unknown_word, unknown_embedding, \
     embedding_size
 
+print('loading fasttext en word embedding')
+word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
+print('loading zh word embedding')
+word_vectors_zh = KeyedVectors.load_word2vec_format('data/sgns.merge.char')
+
 
 class DataGenSequence(Sequence):
     def __init__(self, usage):
         self.usage = usage
-
-        print('loading fasttext en word embedding')
-        self.word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
-        print('loading zh word embedding')
-        self.word_vectors_zh = KeyedVectors.load_word2vec_format('data/sgns.merge.char')
-
-        vocab_zh = pickle.load(open('data/vocab_train_zh.p', 'rb'))
-        self.idx2word_zh = sorted(vocab_zh)
-        self.word2idx_zh = dict(zip(self.idx2word_zh, range(len(vocab_zh))))
-
-        vocab_en = pickle.load(open('data/vocab_train_en.p', 'rb'))
-        self.idx2word_en = sorted(vocab_en)
-        self.word2idx_en = dict(zip(self.idx2word_en, range(len(vocab_en))))
-
+        print('loading {} samples'.format(usage))
         if usage == 'train':
             samples_path = 'data/samples_train.p'
         else:
@@ -55,13 +47,13 @@ class DataGenSequence(Sequence):
                 if word == unknown_word:
                     batch_text_embedding_en[i_batch, idx] = unknown_embedding
                 else:
-                    batch_text_embedding_en[i_batch, idx] = self.word_vectors_en[word]
+                    batch_text_embedding_en[i_batch, idx] = word_vectors_en[word]
 
             for idx, word in enumerate(sample['input_zh']):
                 if word == unknown_word:
                     batch_text_embedding_zh[i_batch, idx] = unknown_embedding
                 else:
-                    batch_text_embedding_zh[i_batch, idx] = self.word_vectors_zh[word]
+                    batch_text_embedding_zh[i_batch, idx] = word_vectors_zh[word]
 
             batch_y[i_batch] = keras.utils.to_categorical(sample['output'], vocab_size_zh)
 
