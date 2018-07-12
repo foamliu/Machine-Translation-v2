@@ -6,10 +6,10 @@ patience = 50
 num_train_samples = 9903244
 num_valid_samples = 8000
 embedding_size = 300
-vocab_size_en = 1000000
-vocab_size_zh = 100000
-max_token_length_en = 100
-max_token_length_zh = 50
+vocab_size_en = 2519373
+vocab_size_zh = 1292553
+max_token_length_en = 209
+max_token_length_zh = 276
 hidden_size = 256
 
 

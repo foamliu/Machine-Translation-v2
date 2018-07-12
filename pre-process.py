@@ -2,7 +2,7 @@ import os
 import pickle
 import zipfile
 from collections import Counter
-
+import xml.etree.ElementTree
 import jieba
 import nltk
 from gensim.models import KeyedVectors
@@ -11,6 +11,7 @@ from tqdm import tqdm
 from config import start_word, stop_word, unknown_word
 from config import train_folder, valid_folder, test_a_folder, test_b_folder
 from config import train_translation_folder, train_translation_zh_filename, train_translation_en_filename
+from config import valid_translation_folder, valid_translation_zh_filename, valid_translation_en_filename
 
 
 def ensure_folder(folder):
@@ -26,7 +27,7 @@ def extract(folder):
 
 
 def build_train_vocab_zh():
-    print('loading fasttext zh word embedding')
+    print('loading zh word embedding')
     word_vectors = KeyedVectors.load_word2vec_format('data/sgns.merge.char')
     translation_path = os.path.join(train_translation_folder, train_translation_zh_filename)
 
@@ -126,6 +127,126 @@ def build_train_vocab_en():
         pickle.dump(sorted(vocab), encoded_pickle)
 
 
+def extract_valid_data():
+    root = xml.etree.ElementTree.parse('valid.en-zh.en.sgm').getroot()
+    data_en = [elem.text.strip() for elem in root.iter() if elem.tag == 'seg']
+    with open('data/valid.en', 'w') as out_file:
+        out_file.writelines(data_en)
+
+    root = xml.etree.ElementTree.parse('valid.en-zh.zh.sgm').getroot()
+    data_zh = [elem.text.strip() for elem in root.iter() if elem.tag == 'seg']
+    with open('data/valid.zh', 'w') as out_file:
+        out_file.writelines(data_zh)
+
+
+def build_train_samples():
+    print('loading fasttext en word embedding')
+    word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
+    translation_path_en = os.path.join(train_translation_folder, train_translation_en_filename)
+    with open(translation_path_en, 'r') as f:
+        data_en = f.readlines()
+    vocab_en = pickle.load(open('data/vocab_train_en.p', 'rb'))
+    idx2word_en = sorted(vocab_en)
+    word2idx_en = dict(zip(idx2word_en, range(len(vocab_en))))
+
+    print('loading zh word embedding')
+    word_vectors_zh = KeyedVectors.load_word2vec_format('data/sgns.merge.char')
+    translation_path_zh = os.path.join(train_translation_folder, train_translation_zh_filename)
+    with open(translation_path_zh, 'r') as f:
+        data_zh = f.readlines()
+    vocab_zh = pickle.load(open('data/vocab_train_zh.p', 'rb'))
+    idx2word_zh = sorted(vocab_zh)
+    word2idx_zh = dict(zip(idx2word_zh, range(len(vocab_zh))))
+
+    print('building train samples')
+    samples = []
+    for idx, sentence_en in tqdm(enumerate(data_en)):
+        input_en = []
+        tokens = nltk.word_tokenize(sentence_en.strip().lower())
+        for word in tokens:
+            try:
+                v = word_vectors_en[word]
+            except (NameError, KeyError):
+                word = unknown_word
+            input_en.append(word2idx_en[word])
+        input_en.append(word2idx_en[stop_word])
+
+        sentence_zh = data_zh[idx].strip().lower()
+        seg_list = jieba.cut(sentence_zh)
+        input_zh = []
+        last_word = start_word
+        for j, word in enumerate(seg_list):
+            try:
+                v = word_vectors_zh[word]
+            except (NameError, KeyError):
+                word = unknown_word
+
+            input_zh.append(word2idx_zh[last_word])
+            samples.append({'input_en': list(input_en), 'input_zh': list(input_zh), 'output': word2idx_zh[word]})
+            last_word = word
+        input_zh.append(word2idx_zh[last_word])
+        samples.append({'input_en': list(input_en), 'input_zh': list(input_zh), 'output': word2idx_zh[stop_word]})
+
+    filename = 'data/samples_train.p'
+    with open(filename, 'wb') as f:
+        pickle.dump(samples, f)
+    print('{} samples created.'.format(len(samples)))
+
+
+def build_valid_samples():
+    print('loading fasttext en word embedding')
+    word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
+    translation_path_en = os.path.join(valid_translation_folder, valid_translation_en_filename)
+    with open(translation_path_en, 'r') as f:
+        data_en = f.readlines()
+    vocab_en = pickle.load(open('data/vocab_train_en.p', 'rb'))
+    idx2word_en = sorted(vocab_en)
+    word2idx_en = dict(zip(idx2word_en, range(len(vocab_en))))
+
+    print('loading zh word embedding')
+    word_vectors_zh = KeyedVectors.load_word2vec_format('data/sgns.merge.char')
+    translation_path_zh = os.path.join(valid_translation_folder, valid_translation_zh_filename)
+    with open(translation_path_zh, 'r') as f:
+        data_zh = f.readlines()
+    vocab_zh = pickle.load(open('data/vocab_train_zh.p', 'rb'))
+    idx2word_zh = sorted(vocab_zh)
+    word2idx_zh = dict(zip(idx2word_zh, range(len(vocab_zh))))
+
+    print('building train samples')
+    samples = []
+    for idx, sentence_en in tqdm(enumerate(data_en)):
+        input_en = []
+        tokens = nltk.word_tokenize(sentence_en.strip().lower())
+        for word in tokens:
+            try:
+                v = word_vectors_en[word]
+            except (NameError, KeyError):
+                word = unknown_word
+            input_en.append(word2idx_zh[word])
+        input_en.append(word2idx_zh[stop_word])
+
+        sentence_zh = data_zh[idx].strip().lower()
+        seg_list = jieba.cut(sentence_zh)
+        input_zh = []
+        last_word = start_word
+        for j, word in enumerate(seg_list):
+            try:
+                v = word_vectors_zh[word]
+            except (NameError, KeyError):
+                word = unknown_word
+
+            input_zh.append(word2idx_zh[last_word])
+            samples.append({'input_en': list(input_en), 'input_zh': list(input_zh), 'output': word2idx_zh[word]})
+            last_word = word
+        input_zh.append(word2idx_zh[last_word])
+        samples.append({'input_en': list(input_en), 'input_zh': list(input_zh), 'output': word2idx_zh[stop_word]})
+
+    filename = 'data/samples_train.p'
+    with open(filename, 'wb') as f:
+        pickle.dump(samples, f)
+    print('{} samples created.'.format(len(samples)))
+
+
 if __name__ == '__main__':
     ensure_folder('data')
 
@@ -146,3 +267,8 @@ if __name__ == '__main__':
 
     if not os.path.isfile('data/vocab_train_en.p'):
         build_train_vocab_en()
+
+    extract_valid_data()
+
+    if not os.path.isfile('data/samples_train.p'):
+        build_train_samples()
