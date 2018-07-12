@@ -19,7 +19,7 @@ def build_model():
 
     x = [en_embedding, zh_embedding]
     x = Concatenate(axis=1)(x)
-    x = CuDNNGRU(hidden_size, return_sequences=False, implementation=2)(x)
+    x = CuDNNGRU(hidden_size, return_sequences=False)(x)
 
     output = Dense(vocab_size_zh, activation='softmax', name='output')(x)
 
