@@ -128,12 +128,12 @@ def build_train_vocab_en():
 
 
 def extract_valid_data():
-    root = xml.etree.ElementTree.parse('valid.en-zh.en.sgm').getroot()
+    root = xml.etree.ElementTree.parse(os.path.join(valid_translation_folder, 'valid.en-zh.en.sgm')).getroot()
     data_en = [elem.text.strip() for elem in root.iter() if elem.tag == 'seg']
     with open('data/valid.en', 'w') as out_file:
         out_file.writelines(data_en)
 
-    root = xml.etree.ElementTree.parse('valid.en-zh.zh.sgm').getroot()
+    root = xml.etree.ElementTree.parse(os.path.join(valid_translation_folder, 'valid.en-zh.zh.sgm')).getroot()
     data_zh = [elem.text.strip() for elem in root.iter() if elem.tag == 'seg']
     with open('data/valid.zh', 'w') as out_file:
         out_file.writelines(data_zh)
