@@ -150,10 +150,12 @@ def extract_valid_data():
 
 
 def build_samples():
-    print('loading fasttext en word embedding')
-    word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
-    print('loading Chinese-Word-Vectors')
-    word_vectors_zh = KeyedVectors.load_word2vec_format('data/sgns.merge.char')
+    vocab_en = pickle.load(open('data/vocab_train_en.p', 'rb'))
+    vocab_set_en = set(vocab_en)
+
+    vocab_zh = pickle.load(open('data/vocab_train_zh.p', 'rb'))
+    idx2word_zh = vocab_zh
+    word2idx_zh = dict(zip(idx2word_zh, range(len(vocab_zh))))
 
     for usage in ['train', 'valid']:
         if usage == 'train':
@@ -172,41 +174,32 @@ def build_samples():
         with open(translation_path_zh, 'r') as f:
             data_zh = f.readlines()
 
-        vocab_zh = pickle.load(open('data/vocab_train_zh.p', 'rb'))
-        idx2word_zh = sorted(vocab_zh)
-        word2idx_zh = dict(zip(idx2word_zh, range(len(vocab_zh))))
-
         print('building {} samples'.format(usage))
         samples = []
         for idx in tqdm(range(len(data_en))):
             sentence_en = data_en[idx].strip().lower()
             input_en = []
             tokens = nltk.word_tokenize(sentence_en)
-            for word in tokens:
-                try:
-                    v = word_vectors_en[word]
-                except (NameError, KeyError):
+            for token in tokens:
+                if token in vocab_set_en:
+                    word = token
+                else:
                     word = unknown_word
                 input_en.append(word)
             input_en.append(stop_word)
 
             sentence_zh = data_zh[idx].strip().lower()
             seg_list = jieba.cut(sentence_zh)
-            input_zh = []
-            last_word = start_word
+            output_zh = []
             for j, token in enumerate(seg_list):
                 try:
-                    v = word_vectors_zh[token]
-                    word = token
+                    idx = word2idx_zh[token]
                 except (NameError, KeyError):
-                    word = unknown_word
+                    idx = word2idx_zh[unknown_word]
+                output_zh.append(idx)
+            output_zh.append(word2idx_zh[stop_word])
 
-                input_zh.append(last_word)
-                samples.append({'input_en': list(input_en), 'input_zh': list(input_zh), 'output': word2idx_zh[word]})
-                last_word = word
-            input_zh.append(last_word)
-            samples.append({'input_en': list(input_en), 'input_zh': list(input_zh), 'output': word2idx_zh[stop_word]})
-
+            samples.append({'input': list(input_en), 'output': list(output_zh)})
         with open(filename, 'wb') as f:
             pickle.dump(samples, f)
         print('{} {} samples created at: {}.'.format(len(samples), usage, filename))

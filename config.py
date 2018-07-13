@@ -9,9 +9,12 @@ num_valid_samples = 8000
 embedding_size = 300
 vocab_size_en = 2519373
 vocab_size_zh = 1292553
-max_token_length_en = 209
-max_token_length_zh = 276
-hidden_size = 256
+max_token_length_en = Tx = 209
+max_token_length_zh = Ty = 276
+# hidden state size of the post-attention LSTM
+n_s = 256
+# hidden state size of the Bi-LSTM
+n_a = 128
 
 
 train_folder = 'data/ai_challenger_translation_train_20170912'

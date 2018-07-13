@@ -1,30 +1,41 @@
 import keras.backend as K
 import tensorflow as tf
-from keras.layers import Input, Dense, CuDNNGRU, TimeDistributed, Concatenate, Bidirectional, RepeatVector
+from keras.layers import Input, Dense, LSTM, Concatenate, Bidirectional, RepeatVector, Activation, \
+    Dot
 from keras.models import Model
 from keras.utils import plot_model
 
-from config import hidden_size, vocab_size_zh, embedding_size, max_token_length_en, max_token_length_zh
+from config import n_s, n_a, vocab_size_zh, embedding_size, Tx, Ty
+
+
+def one_step_attention(a, s_prev):
+    s_prev = RepeatVector(Tx)(s_prev)
+    concat = Concatenate(axis=-1)([a, s_prev])
+    e = Dense(10, activation="tanh")(concat)
+    energies = Dense(1, activation="relu")(e)
+    alphas = Activation('softmax', name='attention_weights')(energies)
+    context = Dot(axes=1)([alphas, a])
+    return context
 
 
 def build_model():
-    en_input = Input(shape=(max_token_length_en, embedding_size), dtype='float32')
-    x = Bidirectional(CuDNNGRU(hidden_size, return_sequences=False))(en_input)
-    x = Dense(embedding_size)(x)
-    en_embedding = RepeatVector(1)(x)
+    X = Input(shape=(Tx, embedding_size), dtype='float32')
+    s0 = Input(shape=(n_s,), name='s0')
+    c0 = Input(shape=(n_s,), name='c0')
+    s = s0
+    c = c0
 
-    zh_input = Input(shape=(max_token_length_zh, embedding_size), dtype='float32')
-    x = Bidirectional(CuDNNGRU(hidden_size, return_sequences=True))(zh_input)
-    zh_embedding = TimeDistributed(Dense(embedding_size))(x)
+    outputs = []
 
-    x = [en_embedding, zh_embedding]
-    x = Concatenate(axis=1)(x)
-    x = CuDNNGRU(hidden_size, return_sequences=False)(x)
+    a = Bidirectional(LSTM(n_a, return_sequences=False))(input)
 
-    output = Dense(vocab_size_zh, activation='softmax', name='output')(x)
+    for t in range(Ty):
+        context = one_step_attention(a, s)
+        s, _, c = LSTM(n_s, return_state=True)(context, initial_state=[s, c])
+        out = Dense(len(vocab_size_zh), activation='softmax')(s)
+        outputs.append(out)
 
-    inputs = [en_input, zh_input]
-    model = Model(inputs=inputs, outputs=output)
+    model = Model(inputs=[X, s0, c0], outputs=outputs)
     return model
 
 
