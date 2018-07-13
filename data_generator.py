@@ -58,8 +58,7 @@ class DataGenSequence(Sequence):
             for idx in range(output_size):
                 batch_y[i_batch, idx] = to_categorical(sample['output'][idx], vocab_size_zh)
 
-            targets = list(batch_y.swapaxes(0, 1))
-
+        targets = list(batch_y.swapaxes(0, 1))
         return [batch_x, s0, c0], targets
 
     def on_epoch_end(self):
