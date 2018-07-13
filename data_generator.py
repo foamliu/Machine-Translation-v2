@@ -11,8 +11,6 @@ from config import batch_size, vocab_size_zh, Tx, Ty, unknown_word, unknown_embe
 
 print('loading fasttext en word embedding')
 word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
-print('loading zh word embedding')
-word_vectors_zh = KeyedVectors.load_word2vec_format('data/sgns.merge.char')
 
 
 class DataGenSequence(Sequence):
