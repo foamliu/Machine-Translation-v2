@@ -6,8 +6,8 @@ from gensim.models import KeyedVectors
 from keras.utils import Sequence
 from keras.utils import to_categorical
 
-from config import batch_size, vocab_size_zh, Tx, Ty, unknown_word, unknown_embedding, \
-    embedding_size, n_s
+from config import batch_size, vocab_size_zh, Tx, Ty, embedding_size, n_s
+from config import start_word, start_embedding, unknown_word, unknown_embedding, stop_word, stop_embedding
 
 print('loading fasttext en word embedding')
 word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
@@ -47,10 +47,15 @@ class DataGenSequence(Sequence):
             input_size = min(Tx, len(sample['input']))
             for idx in range(input_size):
                 word = sample['input'][idx]
-                if word == unknown_word:
-                    batch_x[i_batch, idx] = unknown_embedding
+                if word == start_word:
+                    embedding = start_embedding
+                elif word == stop_word:
+                    embedding = stop_embedding
+                elif word == unknown_word:
+                    embedding = unknown_embedding
                 else:
-                    batch_x[i_batch, idx] = word_vectors_en[word]
+                    embedding = word_vectors_en[word]
+                batch_x[i_batch, idx] = embedding
 
             output_size = min(Ty, len(sample['output']))
             for idx in range(output_size):
