@@ -11,6 +11,7 @@ from config import n_s, n_a, vocab_size_zh, embedding_size, Tx, Ty
 def one_step_attention(a, s_prev):
     s_prev = RepeatVector(Tx)(s_prev)
     concat = Concatenate(axis=-1)([a, s_prev])
+    print('concat.shape: ' + str(concat.shape))
     e = Dense(10, activation="tanh")(concat)
     energies = Dense(1, activation="relu")(e)
     alphas = Activation('softmax', name='attention_weights')(energies)
@@ -28,7 +29,7 @@ def build_model():
     outputs = []
 
     a = Bidirectional(LSTM(n_a, return_sequences=True))(X)
-    print(a.shape)
+    print('a.shape: ' + str(a.shape))
 
     for t in range(Ty):
         context = one_step_attention(a, s)
