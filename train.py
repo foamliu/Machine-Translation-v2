@@ -68,5 +68,5 @@ if __name__ == '__main__':
                             verbose=1,
                             callbacks=callbacks,
                             use_multiprocessing=True,
-                            workers=1
+                            workers=4
                             )
