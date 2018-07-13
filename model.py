@@ -27,12 +27,12 @@ def build_model():
 
     outputs = []
 
-    a = Bidirectional(LSTM(n_a, return_sequences=False))(X)
+    a = Bidirectional(LSTM(n_a, input_length=Tx, return_sequences=False))(X)
     print(a.shape)
 
     for t in range(Ty):
         context = one_step_attention(a, s)
-        s, _, c = LSTM(n_s, input_length=Tx, return_state=True)(context, initial_state=[s, c])
+        s, _, c = LSTM(n_s, return_state=True)(context, initial_state=[s, c])
         out = Dense(len(vocab_size_zh), activation='softmax')(s)
         outputs.append(out)
 
