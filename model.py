@@ -39,15 +39,15 @@ def one_step_attention(a, s_prev):
 
 
 def build_model():
-    text_input = Input(shape=(Tx, embedding_size), dtype='float32')
-    s0 = K.zeros((n_s,))
-    c0 = K.zeros((n_s,))
+    X = Input(shape=(Tx, embedding_size), dtype='float32')
+    s0 = Input(shape=(n_s,), name='s0')
+    c0 = Input(shape=(n_s,), name='c0')
     s = s0
     c = c0
 
     outputs = []
 
-    a = Bidirectional(LSTM(n_a, return_sequences=True))(text_input)
+    a = Bidirectional(LSTM(n_a, return_sequences=True))(X)
     print('a.shape: ' + str(a.shape))
 
     for t in range(Ty):
@@ -56,7 +56,7 @@ def build_model():
         out = Dense(vocab_size_zh, activation='softmax')(s)
         outputs.append(out)
 
-    model = Model(inputs=text_input, outputs=outputs)
+    model = Model(inputs=[X, s0, c0], outputs=outputs)
     return model
 
 
