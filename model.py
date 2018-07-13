@@ -36,7 +36,6 @@ def build_model():
         out = Dense(vocab_size_zh, activation='softmax')(s)
         outputs.append(out)
 
-    print('outputs.shape: ' + str(outputs.shape))
     model = Model(inputs=[X, s0, c0], outputs=outputs)
     return model
 
