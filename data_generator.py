@@ -36,7 +36,7 @@ class DataGenSequence(Sequence):
         length = min(batch_size, (len(self.samples) - i))
 
         batch_x = np.zeros((length, Tx, embedding_size), np.float32)
-        batch_y = np.zeros((length, Ty, vocab_size_zh), np.int32)
+        batch_y = np.zeros((length, Ty, vocab_size_zh), np.float32)
 
         s0 = np.zeros((length, n_s))
         c0 = np.zeros((length, n_s))
