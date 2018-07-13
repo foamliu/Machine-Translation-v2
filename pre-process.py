@@ -66,6 +66,7 @@ def build_train_vocab_zh():
     vocab.append(start_word)
     vocab.append(stop_word)
     vocab.append(unknown_word)
+    vocab = sorted(vocab)
 
     print('max_len(zh): ' + str(max_len))
     print('count of words in text (zh): ' + str(len(list(counter.keys()))))
@@ -75,7 +76,7 @@ def build_train_vocab_zh():
 
     filename = 'data/vocab_train_zh.p'
     with open(filename, 'wb') as encoded_pickle:
-        pickle.dump(sorted(vocab), encoded_pickle)
+        pickle.dump(vocab, encoded_pickle)
 
 
 def build_train_vocab_en():
@@ -116,6 +117,7 @@ def build_train_vocab_en():
     vocab.append(start_word)
     vocab.append(stop_word)
     vocab.append(unknown_word)
+    vocab = sorted(vocab)
 
     print('max_len(zh): ' + str(max_len))
     print('count of words in text (en): ' + str(len(list(counter.keys()))))
@@ -125,7 +127,7 @@ def build_train_vocab_en():
 
     filename = 'data/vocab_train_en.p'
     with open(filename, 'wb') as encoded_pickle:
-        pickle.dump(sorted(vocab), encoded_pickle)
+        pickle.dump(vocab, encoded_pickle)
 
 
 def extract_valid_data():
@@ -194,7 +196,7 @@ def build_samples():
             last_word = start_word
             for j, token in enumerate(seg_list):
                 try:
-                    v = word_vectors_zh[word]
+                    v = word_vectors_zh[token]
                     word = token
                 except (NameError, KeyError):
                     word = unknown_word
