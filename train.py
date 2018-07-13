@@ -3,8 +3,8 @@ import argparse
 import keras
 import tensorflow as tf
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
-from keras.utils import multi_gpu_model
 
+import multi_gpu_utils2 as multi_gpu_utils
 from config import patience, epochs, num_train_samples, num_valid_samples, batch_size
 from data_generator import train_gen, valid_gen
 from model import build_model
@@ -44,7 +44,7 @@ if __name__ == '__main__':
             if pretrained_path is not None:
                 model.load_weights(pretrained_path)
 
-        new_model = multi_gpu_model(model, gpus=num_gpu)
+        new_model = multi_gpu_utils.multi_gpu_model(model, gpus=num_gpu)
         # rewrite the callback: saving through the original model and not the multi-gpu model.
         model_checkpoint = MyCbk(model)
     else:
@@ -52,7 +52,8 @@ if __name__ == '__main__':
         if pretrained_path is not None:
             new_model.load_weights(pretrained_path)
 
-    new_model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    adam = keras.optimizers.Adam(lr=0.005, beta_1=0.9, beta_2=0.999, decay=0.01)
+    new_model.compile(optimizer=adam, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
     print(new_model.summary())
 
