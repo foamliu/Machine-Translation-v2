@@ -66,7 +66,5 @@ if __name__ == '__main__':
                             validation_steps=num_valid_samples // batch_size,
                             epochs=epochs,
                             verbose=1,
-                            callbacks=callbacks,
-                            use_multiprocessing=True,
-                            workers=4
+                            callbacks=callbacks
                             )
