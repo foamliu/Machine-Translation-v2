@@ -47,7 +47,7 @@ def build_model():
 
     outputs = []
 
-    a = Bidirectional(LSTM(n_a, return_sequences=True))(X)
+    a = Bidirectional(LSTM(n_a, return_sequences=True))(text_input)
     print('a.shape: ' + str(a.shape))
 
     for t in range(Ty):
