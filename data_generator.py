@@ -5,7 +5,7 @@ import numpy as np
 from gensim.models import KeyedVectors
 from keras.utils import Sequence
 
-from config import batch_size, Tx, Ty, embedding_size, n_s
+from config import batch_size, Tx, Ty, embedding_size
 from config import start_word, start_embedding, unknown_word, unknown_embedding, stop_word, stop_embedding
 
 
@@ -36,9 +36,6 @@ class DataGenSequence(Sequence):
         batch_x = np.zeros((length, Tx, embedding_size), np.float32)
         batch_y = np.zeros((length, Ty), np.int32)
 
-        s0 = np.zeros((length, n_s))
-        c0 = np.zeros((length, n_s))
-
         for i_batch in range(length):
             sample = self.samples[i + i_batch]
 
@@ -60,7 +57,7 @@ class DataGenSequence(Sequence):
                 batch_y[i_batch, idx] = sample['output'][idx]
 
         targets = list(batch_y.swapaxes(0, 1))
-        return [batch_x, s0, c0], targets
+        return batch_x, targets
 
     def on_epoch_end(self):
         np.random.shuffle(self.samples)
