@@ -34,7 +34,7 @@ def build_model():
     for t in range(Ty):
         context = one_step_attention(a, s)
         s, _, c = LSTM(n_s, return_state=True)(context, initial_state=[s, c])
-        out = Dense(len(vocab_size_zh), activation='softmax')(s)
+        out = Dense(vocab_size_zh, activation='softmax')(s)
         outputs.append(out)
 
     model = Model(inputs=[X, s0, c0], outputs=outputs)
