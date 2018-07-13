@@ -27,7 +27,7 @@ def build_model():
 
     outputs = []
 
-    a = Bidirectional(LSTM(n_a, return_sequences=False))(input)
+    a = Bidirectional(LSTM(n_a, return_sequences=False))(X)
 
     for t in range(Ty):
         context = one_step_attention(a, s)
