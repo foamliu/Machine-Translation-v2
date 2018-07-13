@@ -50,8 +50,7 @@ def build_train_vocab_zh():
             max_len = length
 
     counter = Counter(vocab)
-    common = counter.most_common(vocab_size_zh-3)
-    total_count = len(list(counter.elements()))
+    common = counter.most_common(vocab_size_zh - 3)
     covered_count = 0
     for item in tqdm(common):
         covered_count += item[1]
@@ -62,10 +61,11 @@ def build_train_vocab_zh():
     vocab.append(unknown_word)
 
     print('max_len(zh): ' + str(max_len))
-    print('count of words in text (zh): ' + str(len(list(counter.keys()))))
-    print('fasttext vocab size (zh): ' + str(len(vocab)))
-    print('coverage: ' + str(covered_count / total_count))
     print('longest_sentence: ' + longest_sentence)
+    print('count of words in text (zh): ' + str(len(list(counter.keys()))))
+    print('vocab size (zh): ' + str(len(vocab)))
+    total_count = len(list(counter.elements()))
+    print('coverage: ' + str(covered_count / total_count))
 
     filename = 'data/vocab_train_zh.p'
     with open(filename, 'wb') as file:
