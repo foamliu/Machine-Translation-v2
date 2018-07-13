@@ -27,7 +27,7 @@ def build_model():
 
     outputs = []
 
-    a = Bidirectional(LSTM(n_a, input_length=Tx, return_sequences=False))(X)
+    a = Bidirectional(LSTM(n_a, input_shape=(Tx, embedding_size), return_sequences=False))(X)
     print(a.shape)
 
     for t in range(Ty):
