@@ -4,18 +4,17 @@ import pickle
 import numpy as np
 from gensim.models import KeyedVectors
 from keras.utils import Sequence
-from keras.utils import to_categorical
 
-from config import batch_size, vocab_size_zh, Tx, Ty, embedding_size, n_s
+from config import batch_size, Tx, Ty, embedding_size, n_s
 from config import start_word, start_embedding, unknown_word, unknown_embedding, stop_word, stop_embedding
-
-print('loading fasttext en word embedding')
-word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
 
 
 class DataGenSequence(Sequence):
     def __init__(self, usage):
         self.usage = usage
+
+        print('loading fasttext en word embedding')
+        self.word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
 
         print('loading {} samples'.format(usage))
         if usage == 'train':
@@ -23,8 +22,7 @@ class DataGenSequence(Sequence):
         else:
             samples_path = 'data/samples_valid.p'
 
-        samples = pickle.load(open(samples_path, 'rb'))
-        self.samples = samples
+        self.samples = pickle.load(open(samples_path, 'rb'))
         np.random.shuffle(self.samples)
 
     def __len__(self):
@@ -54,7 +52,7 @@ class DataGenSequence(Sequence):
                 elif word == unknown_word:
                     embedding = unknown_embedding
                 else:
-                    embedding = word_vectors_en[word]
+                    embedding = self.word_vectors_en[word]
                 batch_x[i_batch, idx] = embedding
 
             output_size = min(Ty, len(sample['output']))
