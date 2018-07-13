@@ -29,16 +29,12 @@ def softmax(x, axis=1):
 
 
 def one_step_attention(a, s_prev):
-    print('a.shape: ' + str(a.shape))
     s_prev = RepeatVector(Tx)(s_prev)
     concat = Concatenate(axis=-1)([a, s_prev])
-    print('concat.shape: ' + str(concat.shape))
     e = Dense(10, activation="tanh")(concat)
     energies = Dense(1, activation="relu")(e)
     alphas = Activation(softmax)(energies)
-    print('alphas.shape: ' + str(alphas.shape))
     context = Dot(axes=1)([alphas, a])
-    print('context.shape: ' + str(context.shape))
     return context
 
 
