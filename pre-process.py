@@ -176,9 +176,10 @@ def build_samples():
 
         print('building {} samples'.format(usage))
         samples = []
-        for idx, sentence_en in tqdm(enumerate(data_en)):
+        for idx in tqdm(range(len(data_en))):
+            sentence_en = data_en[idx].strip().lower()
             input_en = []
-            tokens = nltk.word_tokenize(sentence_en.strip().lower())
+            tokens = nltk.word_tokenize(sentence_en)
             for word in tokens:
                 try:
                     v = word_vectors_en[word]
@@ -191,9 +192,10 @@ def build_samples():
             seg_list = jieba.cut(sentence_zh)
             input_zh = []
             last_word = start_word
-            for j, word in enumerate(seg_list):
+            for j, token in enumerate(seg_list):
                 try:
                     v = word_vectors_zh[word]
+                    word = token
                 except (NameError, KeyError):
                     word = unknown_word
 
