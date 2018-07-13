@@ -13,7 +13,7 @@ class DataGenSequence(Sequence):
     def __init__(self, usage):
         self.usage = usage
 
-        print('loading fasttext en word embedding')
+        print('loading fasttext word embedding(en)')
         self.word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
 
         print('loading {} samples'.format(usage))
