@@ -1,4 +1,5 @@
 import multiprocessing
+import os
 
 import cv2 as cv
 import tensorflow as tf
@@ -24,3 +25,8 @@ def draw_str(dst, target, s):
 
 def sparse_loss(y_true, y_pred):
     return tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
+
+
+def ensure_folder(folder):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
