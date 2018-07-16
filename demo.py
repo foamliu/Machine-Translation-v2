@@ -8,7 +8,8 @@ import nltk
 import numpy as np
 from gensim.models import KeyedVectors
 
-from config import stop_word, unknown_word, Tx, Ty, embedding_size, n_s, unknown_embedding, stop_embedding, vocab_size_zh
+from config import stop_word, unknown_word, Tx, Ty, embedding_size, n_s, unknown_embedding, stop_embedding, \
+    vocab_size_zh
 from config import valid_translation_folder, valid_translation_en_filename, valid_translation_zh_filename
 from model import build_model
 
@@ -54,7 +55,7 @@ if __name__ == '__main__':
     for i in range(length):
         idx = samples[i]
         sentence_en = data_en[idx]
-        input_en = []
+        print(sentence_en)
         tokens = nltk.word_tokenize(sentence_en)
         for j, token in enumerate(tokens):
             if token in vocab_set_en:
@@ -70,12 +71,11 @@ if __name__ == '__main__':
     c0 = np.zeros((length, n_s))
     preds = model.predict([batch_x, s0, c0])
 
-    output_zh = []
     for i in range(length):
-        output = preds[i]
+        output_zh = []
         for t in range(Ty):
             print('{} -> {}: '.format(i, t))
-            idx = np.argmax(output)
+            idx = np.argmax(preds[i])
             print('idx: ' + str(idx))
             word_pred = idx2word_zh[idx]
             output_zh.append(word_pred)
