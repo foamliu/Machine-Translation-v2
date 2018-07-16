@@ -8,7 +8,7 @@ import nltk
 import numpy as np
 from gensim.models import KeyedVectors
 
-from config import stop_word, unknown_word, Tx, Ty, embedding_size, n_s
+from config import stop_word, unknown_word, Tx, Ty, embedding_size, n_s, unknown_embedding, stop_embedding
 from config import valid_translation_folder, valid_translation_en_filename, valid_translation_zh_filename
 from model import build_model
 
@@ -57,11 +57,12 @@ if __name__ == '__main__':
         for j, token in enumerate(tokens):
             if token in vocab_set_en:
                 word = token
+                batch_x[i, j] = word_vectors_en[word]
             else:
                 word = unknown_word
-            batch_x[i, j] = word_vectors_en[word]
+                batch_x[i, j] = unknown_embedding
 
-        batch_x[i, j + 1] = word_vectors_en[stop_word]
+        batch_x[i, j + 1] = stop_embedding
 
     s0 = np.zeros((length, n_s))
     c0 = np.zeros((length, n_s))
