@@ -8,7 +8,7 @@ import nltk
 import numpy as np
 from gensim.models import KeyedVectors
 
-from config import stop_word, unknown_word, Tx, Ty, embedding_size, n_s, unknown_embedding, stop_embedding
+from config import stop_word, unknown_word, Tx, Ty, embedding_size, n_s, unknown_embedding, stop_embedding, vocab_size_zh
 from config import valid_translation_folder, valid_translation_en_filename, valid_translation_zh_filename
 from model import build_model
 
@@ -27,7 +27,9 @@ if __name__ == '__main__':
 
     vocab_zh = pickle.load(open('data/vocab_train_zh.p', 'rb'))
     idx2word_zh = vocab_zh
+    print('len(idx2word_zh): ' + str(len(idx2word_zh)))
     word2idx_zh = dict(zip(idx2word_zh, range(len(vocab_zh))))
+    print('vocab_size_zh: ' + str(vocab_size_zh))
 
     print(model.summary())
 
@@ -72,7 +74,10 @@ if __name__ == '__main__':
     for i in range(length):
         output = preds[i]
         for t in range(Ty):
-            word_pred = idx2word_zh[np.argmax(output)]
+            print('{} -> {}: '.format(i, t))
+            idx = np.argmax(output)
+            print('idx: ' + str(idx))
+            word_pred = idx2word_zh[idx]
             output_zh.append(word_pred)
             if word_pred == stop_word:
                 break
