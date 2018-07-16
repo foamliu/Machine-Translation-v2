@@ -75,7 +75,7 @@ if __name__ == '__main__':
         output_zh = []
         for t in range(Ty):
             print('{} -> {}: '.format(i, t))
-            idx = np.argmax(preds[i])
+            idx = np.argmax(preds[i][t])
             print('idx: ' + str(idx))
             word_pred = idx2word_zh[idx]
             output_zh.append(word_pred)
