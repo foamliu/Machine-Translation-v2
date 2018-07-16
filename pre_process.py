@@ -9,7 +9,7 @@ import nltk
 from gensim.models import KeyedVectors
 from tqdm import tqdm
 
-from config import start_word, stop_word, unknown_word, vocab_size_zh
+from config import start_word, stop_word, unknown_word, vocab_size_zh, Tx, Ty
 from config import train_folder, valid_folder, test_a_folder, test_b_folder
 from config import train_translation_folder, train_translation_zh_filename, train_translation_en_filename
 from config import valid_translation_folder, valid_translation_zh_filename, valid_translation_en_filename
@@ -194,7 +194,8 @@ def build_samples():
                 output_zh.append(idx)
             output_zh.append(word2idx_zh[stop_word])
 
-            samples.append({'input': list(input_en), 'output': list(output_zh)})
+            if len(input_en) <= Tx and len(output_zh) <= Ty:
+                samples.append({'input': list(input_en), 'output': list(output_zh)})
         with open(filename, 'wb') as f:
             pickle.dump(samples, f)
         print('{} {} samples created at: {}.'.format(len(samples), usage, filename))

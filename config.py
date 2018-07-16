@@ -9,8 +9,8 @@ num_valid_samples = 8000
 embedding_size = 300
 vocab_size_en = 11500
 vocab_size_zh = 28800
-max_token_length_en = Tx = 26
-max_token_length_zh = Ty = 25
+max_token_length_en = Tx = 26 + 1   # 1 is for tailing stop word
+max_token_length_zh = Ty = 25 + 1   # 1 is for tailing stop word
 # hidden state size of the post-attention LSTM
 n_s = 128
 # hidden state size of the Bi-LSTM
