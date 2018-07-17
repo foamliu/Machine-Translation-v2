@@ -70,7 +70,13 @@ if __name__ == '__main__':
     s0 = np.zeros((length, n_s))
     c0 = np.zeros((length, n_s))
     preds = model.predict([batch_x, s0, c0])
-    print('preds.shape: ' + str(preds.shape))
+    print('type(preds): ' + str(type(preds)))
+    if type(preds) == list:
+        print('len(preds): ' + str(len(preds)))
+        print('type(preds[0]): ' + str(type(preds[0])))
+        if type(preds[0]) == list:
+            print('len(preds[0]): ' + str(len(preds[0])))
+            print('type(preds[0][0]): ' + str(type(preds[0][0])))
 
     for i in range(length):
         output_zh = []
