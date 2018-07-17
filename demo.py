@@ -50,35 +50,30 @@ if __name__ == '__main__':
     length = 10
     samples = random.sample(indices, length)
 
-    batch_x = np.zeros((length, Tx, embedding_size), np.float32)
-
     for i in range(length):
         idx = samples[i]
         sentence_en = data_en[idx]
         print(sentence_en)
         tokens = nltk.word_tokenize(sentence_en)
+        x = np.zeros((1, Tx, embedding_size), np.float32)
         for j, token in enumerate(tokens):
             if token in vocab_set_en:
                 word = token
-                batch_x[i, j] = word_vectors_en[word]
+                x[i, j] = word_vectors_en[word]
             else:
                 word = unknown_word
-                batch_x[i, j] = unknown_embedding
+                x[i, j] = unknown_embedding
 
-        batch_x[i, j + 1] = stop_embedding
+        x[i, len(tokens)] = stop_embedding
 
-    s0 = np.zeros((length, n_s))
-    c0 = np.zeros((length, n_s))
-    preds = model.predict([batch_x, s0, c0])
-    print('type(preds): ' + str(type(preds)))
-    if type(preds) == list:
-        print('len(preds): ' + str(len(preds)))
-        print('type(preds[0]): ' + str(type(preds[0])))
-        if type(preds[0]) == list:
-            print('len(preds[0]): ' + str(len(preds[0])))
-            print('type(preds[0][0]): ' + str(type(preds[0][0])))
+        s0 = np.zeros((length, n_s))
+        c0 = np.zeros((length, n_s))
+        preds = model.predict([x, s0, c0])
+        print('type(preds): ' + str(type(preds)))
+        if type(preds) == list:
+            print('len(preds): ' + str(len(preds)))
+            print('preds[0].shape: ' + str(preds[0].shape))
 
-    for i in range(length):
         output_zh = []
         for t in range(Ty):
             print('{} -> {}: '.format(i, t))
