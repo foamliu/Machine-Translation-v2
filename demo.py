@@ -64,21 +64,15 @@ if __name__ == '__main__':
                 word = unknown_word
                 x[0, j] = unknown_embedding
 
-        x[i, len(tokens)] = stop_embedding
+        x[0, len(tokens)] = stop_embedding
 
         s0 = np.zeros((length, n_s))
         c0 = np.zeros((length, n_s))
         preds = model.predict([x, s0, c0])
-        # print('type(preds): ' + str(type(preds)))
-        # if type(preds) == list:
-        #     print('len(preds): ' + str(len(preds)))
-        #     print('preds[0].shape: ' + str(preds[0].shape))
 
         output_zh = []
         for t in range(Ty):
-            # print('{} -> {}: '.format(i, t))
             idx = np.argmax(preds[t][0])
-            # print('idx: ' + str(idx))
             word_pred = idx2word_zh[idx]
             output_zh.append(word_pred)
             if word_pred == stop_word:
