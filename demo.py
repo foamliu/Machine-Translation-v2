@@ -59,10 +59,10 @@ if __name__ == '__main__':
         for j, token in enumerate(tokens):
             if token in vocab_set_en:
                 word = token
-                x[i, j] = word_vectors_en[word]
+                x[0, j] = word_vectors_en[word]
             else:
                 word = unknown_word
-                x[i, j] = unknown_embedding
+                x[0, j] = unknown_embedding
 
         x[i, len(tokens)] = stop_embedding
 
