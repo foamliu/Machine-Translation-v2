@@ -29,7 +29,7 @@ valid_translation_zh_filename = 'valid.zh'
 
 start_word = '<start>'
 stop_word = '<end>'
-unknown_word = '<UNK>'
+unknown_word = '<unk>'
 start_embedding = np.zeros((embedding_size,))
 stop_embedding = np.ones((embedding_size,))
 unknown_embedding = np.ones((embedding_size,)) / 2
