@@ -39,6 +39,7 @@ def build_train_vocab_zh():
     vocab = [item[0] for item in common]
     vocab.append(start_word)
     vocab.append(stop_word)
+    vocab.append(unknown_word)
     print('vocab size (zh): ' + str(len(vocab)))
 
     filename = 'data/vocab_train_zh.p'
@@ -109,7 +110,10 @@ def build_samples():
             sentence_zh = data_zh[idx].strip()
             output_zh = []
             for j, token in enumerate(sentence_zh):
-                idx = word2idx_zh[token]
+                try:
+                    idx = word2idx_zh[token]
+                except KeyError:
+                    idx = word2idx_zh[unknown_word]
                 output_zh.append(idx)
             output_zh.append(word2idx_zh[stop_word])
 
@@ -137,9 +141,6 @@ if __name__ == '__main__':
 
     if not os.path.isfile('data/vocab_train_zh.p'):
         build_train_vocab_zh()
-
-    if not os.path.isfile('data/vocab_train_en.p'):
-        build_train_vocab_en()
 
     extract_valid_data()
 
