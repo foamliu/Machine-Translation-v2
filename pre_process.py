@@ -215,6 +215,8 @@ def build_train_vocab_zh_char_level():
             vocab.append(char)
         length = len(sentence)
         lengthes.append(length)
+        if length > max_len:
+            max_len = length
 
     counter_vocab = Counter(vocab)
     counter_length = Counter(lengthes)
@@ -223,21 +225,28 @@ def build_train_vocab_zh_char_level():
     with open('data/counter_length_zh_char', 'wb') as file:
         pickle.dump(counter_length, file)
 
-    common = counter_vocab.most_common(vocab_size_zh - 3)
+    total_count = len(data)
+    common = counter_length.most_common()
     covered_count = 0
+    for i in range(1, 522):
+        count = [item[1] for item in common if item[0] == i]
+        if count:
+            covered_count += count
+        print('{} -> {}'.format(i, covered_count/total_count))
+
     for item in tqdm(common):
         covered_count += item[1]
 
+    common = counter_vocab.most_common()
     vocab = [item[0] for item in common]
+    print('vocab size (zh): ' + str(len(vocab)))
     vocab.append(start_word)
     vocab.append(stop_word)
     vocab.append(unknown_word)
+    print('vocab size (zh): ' + str(len(vocab)))
 
     print('max_len(zh): ' + str(max_len))
     print('count of words in text (zh): ' + str(len(list(counter_vocab.keys()))))
-    print('vocab size (zh): ' + str(len(vocab)))
-    total_count = len(list(counter_vocab.elements()))
-    print('coverage: ' + str(covered_count / total_count))
 
     filename = 'data/vocab_train_zh_char.p'
     with open(filename, 'wb') as file:
