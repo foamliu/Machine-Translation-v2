@@ -231,7 +231,7 @@ def build_train_vocab_zh_char_level():
     for i in range(1, 522):
         count = [item[1] for item in common if item[0] == i]
         if count:
-            covered_count += count
+            covered_count += count[0]
         print('{} -> {}'.format(i, covered_count/total_count))
 
     for item in tqdm(common):
