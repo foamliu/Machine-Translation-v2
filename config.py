@@ -8,13 +8,13 @@ num_train_samples = 9269603
 num_valid_samples = 7964
 embedding_size = 300
 vocab_size_en = 11500
-vocab_size_zh = 8733
+vocab_size_zh = 8731
 max_token_length_en = Tx = 26 + 1   # 1 is for tailing stop word
-max_token_length_zh = Ty = 25 + 1   # 1 is for tailing stop word
+max_token_length_zh = Ty = 50 + 1   # 1 is for tailing stop word
 # hidden state size of the post-attention LSTM
-n_s = 128
+n_s = 256
 # hidden state size of the Bi-LSTM
-n_a = 64
+n_a = 128
 
 
 train_folder = 'data/ai_challenger_translation_train_20170912'

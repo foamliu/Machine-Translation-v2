@@ -4,12 +4,11 @@ import xml.etree.ElementTree
 import zipfile
 from collections import Counter
 
-import jieba
 import nltk
 from gensim.models import KeyedVectors
 from tqdm import tqdm
 
-from config import start_word, stop_word, unknown_word, vocab_size_zh, Tx, Ty
+from config import start_word, stop_word, unknown_word, Tx, Ty
 from config import train_folder, valid_folder, test_a_folder, test_b_folder
 from config import train_translation_folder, train_translation_zh_filename, train_translation_en_filename
 from config import valid_translation_folder, valid_translation_zh_filename, valid_translation_en_filename
@@ -30,96 +29,19 @@ def build_train_vocab_zh():
         data = f.readlines()
 
     vocab = []
-    max_len = 0
-    lengthes = []
     print('scanning train data (zh)')
     for sentence in tqdm(data):
-        seg_list = jieba.cut(sentence.strip().lower())
-        length = 0
-        for word in seg_list:
-            vocab.append(word)
-            length = length + 1
-
-        lengthes.append(length)
+        for char in sentence.strip():
+            vocab.append(char)
 
     counter_vocab = Counter(vocab)
-    counter_length = Counter(lengthes)
-    with open('data/counter_vocab_zh', 'wb') as file:
-        pickle.dump(counter_vocab, file)
-    with open('data/counter_length_zh', 'wb') as file:
-        pickle.dump(counter_length, file)
-
-    common = counter_vocab.most_common(vocab_size_zh - 3)
-    covered_count = 0
-    for item in tqdm(common):
-        covered_count += item[1]
-
+    common = counter_vocab.most_common()
     vocab = [item[0] for item in common]
     vocab.append(start_word)
     vocab.append(stop_word)
-    vocab.append(unknown_word)
-
-    print('max_len(zh): ' + str(max_len))
-    print('count of words in text (zh): ' + str(len(list(counter_vocab.keys()))))
     print('vocab size (zh): ' + str(len(vocab)))
-    total_count = len(list(counter_vocab.elements()))
-    print('coverage: ' + str(covered_count / total_count))
 
     filename = 'data/vocab_train_zh.p'
-    with open(filename, 'wb') as file:
-        pickle.dump(vocab, file)
-
-
-def build_train_vocab_en():
-    print('loading fasttext en word embedding')
-    word_vectors = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
-    translation_path = os.path.join(train_translation_folder, train_translation_en_filename)
-
-    with open(translation_path, 'r') as f:
-        data = f.readlines()
-
-    vocab = []
-    max_len = 0
-    lengthes = []
-    print('building {} train vocab (en)')
-    for sentence in tqdm(data):
-        tokens = nltk.word_tokenize(sentence.strip().lower())
-        for token in tokens:
-            vocab.append(token)
-
-        length = len(tokens)
-        lengthes.append(length)
-
-    counter_vocab = Counter(vocab)
-    counter_length = Counter(lengthes)
-    with open('data/counter_vocab_en', 'wb') as file:
-        pickle.dump(counter_vocab, file)
-    with open('data/counter_length_en', 'wb') as file:
-        pickle.dump(counter_length, file)
-
-    total_count = 0
-    covered_count = 0
-    for word in tqdm(counter_vocab.keys()):
-        total_count += counter_vocab[word]
-        try:
-            v = word_vectors[word]
-            covered_count += counter_vocab[word]
-        except (NameError, KeyError):
-            # print(word)
-            pass
-
-    vocab = list(word_vectors.vocab.keys())
-    vocab.append(start_word)
-    vocab.append(stop_word)
-    vocab.append(unknown_word)
-    vocab = sorted(vocab)
-
-    print('max_len(zh): ' + str(max_len))
-    print('count of words in text (en): ' + str(len(list(counter_vocab.keys()))))
-    print('fasttext vocab size (en): ' + str(len(vocab)))
-    print('coverage: ' + str(covered_count / total_count))
-
-    filename = 'data/vocab_train_en.p'
     with open(filename, 'wb') as file:
         pickle.dump(vocab, file)
 
@@ -144,8 +66,8 @@ def extract_valid_data():
 
 
 def build_samples():
-    vocab_en = pickle.load(open('data/vocab_train_en.p', 'rb'))
-    vocab_set_en = set(vocab_en)
+    print('loading fasttext en word embedding')
+    word_vectors = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
 
     vocab_zh = pickle.load(open('data/vocab_train_zh.p', 'rb'))
     idx2word_zh = vocab_zh
@@ -175,21 +97,19 @@ def build_samples():
             input_en = []
             tokens = nltk.word_tokenize(sentence_en)
             for token in tokens:
-                if token in vocab_set_en:
+                try:
+                    temp = word_vectors[token]
                     word = token
-                else:
+                except KeyError:
                     word = unknown_word
+
                 input_en.append(word)
             input_en.append(stop_word)
 
-            sentence_zh = data_zh[idx].strip().lower()
-            seg_list = jieba.cut(sentence_zh)
+            sentence_zh = data_zh[idx].strip()
             output_zh = []
-            for j, token in enumerate(seg_list):
-                try:
-                    idx = word2idx_zh[token]
-                except (NameError, KeyError):
-                    idx = word2idx_zh[unknown_word]
+            for j, token in enumerate(sentence_zh):
+                idx = word2idx_zh[token]
                 output_zh.append(idx)
             output_zh.append(word2idx_zh[stop_word])
 
@@ -198,59 +118,6 @@ def build_samples():
         with open(filename, 'wb') as f:
             pickle.dump(samples, f)
         print('{} {} samples created at: {}.'.format(len(samples), usage, filename))
-
-
-def build_train_vocab_zh_char_level():
-    translation_path = os.path.join(train_translation_folder, train_translation_zh_filename)
-
-    with open(translation_path, 'r') as f:
-        data = f.readlines()
-
-    vocab = []
-    max_len = 0
-    lengthes = []
-    print('scanning train data (zh)')
-    for sentence in tqdm(data):
-        for char in sentence:
-            vocab.append(char)
-        length = len(sentence)
-        lengthes.append(length)
-        if length > max_len:
-            max_len = length
-
-    counter_vocab = Counter(vocab)
-    counter_length = Counter(lengthes)
-    with open('data/counter_vocab_zh_char', 'wb') as file:
-        pickle.dump(counter_vocab, file)
-    with open('data/counter_length_zh_char', 'wb') as file:
-        pickle.dump(counter_length, file)
-
-    total_count = len(data)
-    common = counter_length.most_common()
-    covered_count = 0
-    for i in range(1, 522):
-        count = [item[1] for item in common if item[0] == i]
-        if count:
-            covered_count += count[0]
-        print('{} -> {}'.format(i, covered_count/total_count))
-
-    for item in tqdm(common):
-        covered_count += item[1]
-
-    common = counter_vocab.most_common()
-    vocab = [item[0] for item in common]
-    print('vocab size (zh): ' + str(len(vocab)))
-    vocab.append(start_word)
-    vocab.append(stop_word)
-    vocab.append(unknown_word)
-    print('vocab size (zh): ' + str(len(vocab)))
-
-    print('max_len(zh): ' + str(max_len))
-    print('count of words in text (zh): ' + str(len(list(counter_vocab.keys()))))
-
-    filename = 'data/vocab_train_zh_char.p'
-    with open(filename, 'wb') as file:
-        pickle.dump(vocab, file)
 
 
 if __name__ == '__main__':
