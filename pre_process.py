@@ -24,7 +24,6 @@ def extract(folder):
 
 
 def build_train_vocab_zh():
-    print('loading zh word embedding')
     translation_path = os.path.join(train_translation_folder, train_translation_zh_filename)
 
     with open(translation_path, 'r') as f:
@@ -199,6 +198,50 @@ def build_samples():
         with open(filename, 'wb') as f:
             pickle.dump(samples, f)
         print('{} {} samples created at: {}.'.format(len(samples), usage, filename))
+
+
+def build_train_vocab_zh_char_level():
+    translation_path = os.path.join(train_translation_folder, train_translation_zh_filename)
+
+    with open(translation_path, 'r') as f:
+        data = f.readlines()
+
+    vocab = []
+    max_len = 0
+    lengthes = []
+    print('scanning train data (zh)')
+    for sentence in tqdm(data):
+        for char in sentence:
+            vocab.append(char)
+        length = len(sentence)
+        lengthes.append(length)
+
+    counter_vocab = Counter(vocab)
+    counter_length = Counter(lengthes)
+    with open('data/counter_vocab_zh_char', 'wb') as file:
+        pickle.dump(counter_vocab, file)
+    with open('data/counter_length_zh_char', 'wb') as file:
+        pickle.dump(counter_length, file)
+
+    common = counter_vocab.most_common(vocab_size_zh - 3)
+    covered_count = 0
+    for item in tqdm(common):
+        covered_count += item[1]
+
+    vocab = [item[0] for item in common]
+    vocab.append(start_word)
+    vocab.append(stop_word)
+    vocab.append(unknown_word)
+
+    print('max_len(zh): ' + str(max_len))
+    print('count of words in text (zh): ' + str(len(list(counter_vocab.keys()))))
+    print('vocab size (zh): ' + str(len(vocab)))
+    total_count = len(list(counter_vocab.elements()))
+    print('coverage: ' + str(covered_count / total_count))
+
+    filename = 'data/vocab_train_zh_char.p'
+    with open(filename, 'wb') as file:
+        pickle.dump(vocab, file)
 
 
 if __name__ == '__main__':
