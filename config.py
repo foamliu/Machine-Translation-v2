@@ -4,8 +4,8 @@ import numpy as np
 batch_size = 128
 epochs = 10000
 patience = 50
-num_train_samples = 9269603
-num_valid_samples = 7964
+num_train_samples = 9447491
+num_valid_samples = 7985
 embedding_size = 300
 vocab_size_zh = 8732
 max_token_length_en = Tx = 50 + 1   # 1 is for tailing stop word
