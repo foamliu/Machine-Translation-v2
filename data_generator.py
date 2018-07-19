@@ -56,7 +56,7 @@ class DataGenSequence(Sequence):
             for idx in range(output_size):
                 batch_y[i_batch, idx] = sample['output'][idx]
 
-        # targets = list(batch_y.swapaxes(0, 1))
+        batch_y = np.expand_dims(batch_y, -1)
         return batch_x, batch_y
 
     def on_epoch_end(self):
