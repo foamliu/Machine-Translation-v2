@@ -1,6 +1,6 @@
 import keras.backend as K
 import tensorflow as tf
-from keras.layers import Input, Dense, CuDNNLSTM, Concatenate, Bidirectional, RepeatVector, Activation, Dot, Dropout
+from keras.layers import Input, Dense, CuDNNGRU, Concatenate, Bidirectional, RepeatVector, Activation, Dot, Dropout
 from keras.models import Model
 from keras.utils import plot_model
 
@@ -48,13 +48,13 @@ def build_model():
     outputs = []
 
     X_dropout = Dropout(0.5)(X)
-    a = Bidirectional(CuDNNLSTM(n_a, return_sequences=True))(X_dropout)
+    a = Bidirectional(CuDNNGRU(n_a, return_sequences=True))(X_dropout)
     print('a.shape: ' + str(a.shape))
 
     for t in range(Ty):
         context = one_step_attention(a, s)
         context_dropout = Dropout(0.5)(context)
-        s, _, c = CuDNNLSTM(n_s, return_state=True)(context_dropout, initial_state=[s, c])
+        s, _, c = CuDNNGRU(n_s, return_state=True)(context_dropout, initial_state=[s, c])
         out = Dense(vocab_size_zh, activation='softmax', name='y_' + str(t))(s)
         outputs.append(out)
 
