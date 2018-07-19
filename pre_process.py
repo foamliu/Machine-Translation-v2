@@ -4,6 +4,7 @@ import xml.etree.ElementTree
 import zipfile
 from collections import Counter
 
+import jieba
 import nltk
 from gensim.models import KeyedVectors
 from tqdm import tqdm
@@ -31,8 +32,9 @@ def build_train_vocab_zh():
     vocab = []
     print('scanning train data (zh)')
     for sentence in tqdm(data):
-        for char in sentence.strip():
-            vocab.append(char)
+        seg_list = jieba.cut(sentence.strip())
+        for word in seg_list:
+            vocab.append(word)
 
     counter_vocab = Counter(vocab)
     common = counter_vocab.most_common()
@@ -108,10 +110,11 @@ def build_samples():
             input_en.append(stop_word)
 
             sentence_zh = data_zh[idx].strip()
+            seg_list = jieba.cut(sentence_zh)
             output_zh = []
-            for j, token in enumerate(sentence_zh):
+            for word in seg_list:
                 try:
-                    idx = word2idx_zh[token]
+                    idx = word2idx_zh[word]
                 except KeyError:
                     idx = word2idx_zh[unknown_word]
                 output_zh.append(idx)

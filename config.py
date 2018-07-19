@@ -7,9 +7,9 @@ patience = 50
 num_train_samples = 9447491
 num_valid_samples = 7985
 embedding_size = 300
-vocab_size_zh = 8732
-max_token_length_en = Tx = 50 + 1   # 1 is for tailing stop word
-max_token_length_zh = Ty = 50 + 1   # 1 is for tailing stop word
+vocab_size_zh = 50000
+max_token_length_en = Tx = 20 + 1   # 1 is for tailing stop word
+max_token_length_zh = Ty = 20 + 1   # 1 is for tailing stop word
 # hidden state size of the post-attention LSTM
 n_s = 256
 # hidden state size of the Bi-LSTM
