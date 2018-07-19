@@ -23,9 +23,6 @@ if __name__ == '__main__':
     print('loading fasttext word embedding(en)')
     word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
 
-    vocab_en = pickle.load(open('data/vocab_train_en.p', 'rb'))
-    vocab_set_en = set(vocab_en)
-
     vocab_zh = pickle.load(open('data/vocab_train_zh.p', 'rb'))
     idx2word_zh = vocab_zh
     print('len(idx2word_zh): ' + str(len(idx2word_zh)))
@@ -56,11 +53,10 @@ if __name__ == '__main__':
         print(sentence_en)
         tokens = nltk.word_tokenize(sentence_en)
         x = np.zeros((1, Tx, embedding_size), np.float32)
-        for j, token in enumerate(tokens):
-            if token in vocab_set_en:
-                word = token
+        for j, word in enumerate(tokens):
+            try:
                 x[0, j] = word_vectors_en[word]
-            else:
+            except KeyError:
                 word = unknown_word
                 x[0, j] = unknown_embedding
 
