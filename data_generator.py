@@ -56,8 +56,8 @@ class DataGenSequence(Sequence):
             for idx in range(output_size):
                 batch_y[i_batch, idx] = sample['output'][idx]
 
-        targets = list(batch_y.swapaxes(0, 1))
-        return batch_x, targets
+        # targets = list(batch_y.swapaxes(0, 1))
+        return batch_x, batch_y
 
     def on_epoch_end(self):
         np.random.shuffle(self.samples)
