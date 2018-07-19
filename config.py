@@ -10,10 +10,8 @@ embedding_size = 300
 vocab_size_zh = 50000
 max_token_length_en = Tx = 20 + 1   # 1 is for tailing stop word
 max_token_length_zh = Ty = 20 + 1   # 1 is for tailing stop word
-# hidden state size of the post-attention LSTM
-n_s = 256
-# hidden state size of the Bi-LSTM
-n_a = 128
+
+hidden_size = 1024
 
 
 train_folder = 'data/ai_challenger_translation_train_20170912'
