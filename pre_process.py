@@ -9,7 +9,7 @@ import nltk
 from gensim.models import KeyedVectors
 from tqdm import tqdm
 
-from config import start_word, stop_word, unknown_word, Tx, Ty
+from config import start_word, stop_word, unknown_word, Tx, Ty, vocab_size_zh
 from config import train_folder, valid_folder, test_a_folder, test_b_folder
 from config import train_translation_folder, train_translation_zh_filename, train_translation_en_filename
 from config import valid_translation_folder, valid_translation_zh_filename, valid_translation_en_filename
@@ -37,7 +37,7 @@ def build_train_vocab_zh():
             vocab.append(word)
 
     counter_vocab = Counter(vocab)
-    common = counter_vocab.most_common()
+    common = counter_vocab.most_common(vocab_size_zh-3)
     vocab = [item[0] for item in common]
     vocab.append(start_word)
     vocab.append(stop_word)
