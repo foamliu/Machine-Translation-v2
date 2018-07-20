@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import keras
 from hyperas import optim
 from hyperas.distributions import choice, uniform
 from hyperopt import Trials, STATUS_OK, tpe
@@ -27,8 +28,8 @@ def create_model():
     output = x
     model = Model(inputs=input_tensor, outputs=output)
 
-    model.compile(loss='categorical_crossentropy', metrics=['accuracy'],
-                  optimizer={{choice(['rmsprop', 'adam', 'sgd', 'nadam'])}})
+    adam = keras.optimizers.Adam(lr={{uniform(0, 1)}})
+    model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer=adam)
 
     model.fit_generator(
         DataGenSequence('train'),
