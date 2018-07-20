@@ -41,7 +41,7 @@ if __name__ == '__main__':
         new_model.load_weights(pretrained_path)
 
     adam = keras.optimizers.Adam(lr=0.002, beta_1=0.9, beta_2=0.999, clipvalue=5.)
-    decoder_target = tf.placeholder(dtype='int32', shape=(None, Ty))
+    decoder_target = tf.placeholder(dtype='float32', shape=(None, Ty))
     new_model.compile(optimizer=adam, loss='sparse_categorical_crossentropy', metrics=['sparse_categorical_accuracy'], target_tensors=[decoder_target])
 
     print(new_model.summary())
