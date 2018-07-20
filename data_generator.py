@@ -34,7 +34,7 @@ class DataGenSequence(Sequence):
         length = min(batch_size, (len(self.samples) - i))
 
         batch_x = np.zeros((length, Tx, embedding_size), np.float32)
-        batch_y = np.zeros((length, Ty), np.int32)
+        batch_y = np.zeros((length, Ty, vocab_size_zh), np.float32)
 
         for i_batch in range(length):
             sample = self.samples[i + i_batch]
@@ -54,7 +54,7 @@ class DataGenSequence(Sequence):
 
             output_size = min(Ty, len(sample['output']))
             for idx in range(output_size):
-                batch_y[i_batch, idx] = sample['output'][idx]
+                batch_y[i_batch, idx] = to_categorical(sample['output'][idx], vocab_size_zh)
 
         return batch_x, batch_y
 

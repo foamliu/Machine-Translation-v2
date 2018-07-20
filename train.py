@@ -1,9 +1,9 @@
 import argparse
-import tensorflow as tf
+
 import keras
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 
-from config import patience, epochs, num_train_samples, num_valid_samples, batch_size, Ty
+from config import patience, epochs, num_train_samples, num_valid_samples, batch_size
 from data_generator import train_gen, valid_gen
 from model import build_model
 from utils import ensure_folder
@@ -33,6 +33,7 @@ if __name__ == '__main__':
             fmt = checkpoint_models_path + 'model.%02d-%.4f.hdf5'
             self.model_to_save.save(fmt % (epoch, logs['val_loss']))
 
+
     # folders
     ensure_folder('models')
 
@@ -40,9 +41,8 @@ if __name__ == '__main__':
     if pretrained_path is not None:
         new_model.load_weights(pretrained_path)
 
-    adam = keras.optimizers.Adam(lr=0.002, beta_1=0.9, beta_2=0.999, clipvalue=5.)
-    decoder_target = tf.placeholder(dtype='float32', shape=(None, Ty))
-    new_model.compile(optimizer=adam, loss='sparse_categorical_crossentropy', metrics=['sparse_categorical_accuracy'], target_tensors=[decoder_target])
+    adam = keras.optimizers.Adam(lr=0.002, beta_1=0.9, beta_2=0.999, clipnorm=5., clipvalue=5.)
+    new_model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
 
     print(new_model.summary())
 

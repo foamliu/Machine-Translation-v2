@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import tensorflow as tf
 from hyperas import optim
 from hyperas.distributions import choice, uniform
 from hyperopt import Trials, STATUS_OK, tpe
@@ -8,7 +7,7 @@ from keras.layers import Input, CuDNNLSTM, Bidirectional, TimeDistributed
 from keras.layers.core import Dense, Dropout
 from keras.models import Model
 
-from config import batch_size, num_train_samples, num_valid_samples, hidden_size, vocab_size_zh, embedding_size, Tx, Ty
+from config import batch_size, num_train_samples, num_valid_samples, vocab_size_zh, embedding_size, Tx
 from data_generator import DataGenSequence
 
 
@@ -28,9 +27,8 @@ def create_model():
     output = x
     model = Model(inputs=input_tensor, outputs=output)
 
-    decoder_target = tf.placeholder(dtype='float32', shape=(None, Ty))
-    model.compile(loss='sparse_categorical_crossentropy', metrics=['sparse_categorical_accuracy'],
-                  optimizer={{choice(['rmsprop', 'adam', 'sgd', 'nadam'])}}, target_tensors=[decoder_target])
+    model.compile(loss='categorical_crossentropy', metrics=['accuracy'],
+                  optimizer={{choice(['rmsprop', 'adam', 'sgd', 'nadam'])}})
 
     model.fit_generator(
         DataGenSequence('train'),
