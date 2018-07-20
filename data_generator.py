@@ -56,7 +56,6 @@ class DataGenSequence(Sequence):
             for idx in range(output_size):
                 batch_y[i_batch, idx] = to_categorical(sample['output'][idx], vocab_size_zh)
 
-        batch_y = np.expand_dims(batch_y, -1)
         return batch_x, batch_y
 
     def on_epoch_end(self):
