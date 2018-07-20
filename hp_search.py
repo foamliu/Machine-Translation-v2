@@ -45,7 +45,7 @@ def create_model(train_generator, validation_generator):
 
 
 if __name__ == '__main__':
-    train_generator, validation_generator = data()
+    train_gen, validation_gen = data()
     best_run, best_model = optim.minimize(model=create_model,
                                           data=data,
                                           algo=tpe.suggest,
@@ -53,6 +53,6 @@ if __name__ == '__main__':
                                           trials=Trials())
 
     print("Evalutation of best performing model:")
-    print(best_model.evaluate_generator(validation_generator))
+    print(best_model.evaluate_generator(validation_gen))
     print("Best performing model chosen hyper-parameters:")
     print(best_run)
