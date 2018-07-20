@@ -18,7 +18,7 @@ def data():
     return DataGenSequence('train'), DataGenSequence('valid')
 
 
-def create_model():
+def create_model(train_generator, validation_generator):
     input_tensor = Input(shape=(Tx, embedding_size), dtype='float32')
     x = Bidirectional(CuDNNLSTM({{choice([256, 512, 1024])}}, return_sequences=True))(input_tensor)
     x = Dropout({{uniform(0, 1)}})(x)
@@ -34,17 +34,18 @@ def create_model():
     model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer=adam)
 
     model.fit_generator(
-        DataGenSequence('train'),
+        train_generator,
         steps_per_epoch=num_train_samples / batch_size // 50,
-        validation_data=DataGenSequence('valid'),
+        validation_data=validation_generator,
         validation_steps=num_valid_samples / batch_size // 50)
 
-    score, acc = model.evaluate_generator(DataGenSequence('valid'), verbose=0)
+    score, acc = model.evaluate_generator(validation_generator)
     print('Test accuracy:', acc)
     return {'loss': -acc, 'status': STATUS_OK, 'model': model}
 
 
 if __name__ == '__main__':
+    train_generator, validation_generator = data()
     best_run, best_model = optim.minimize(model=create_model,
                                           data=data,
                                           algo=tpe.suggest,
@@ -52,6 +53,6 @@ if __name__ == '__main__':
                                           trials=Trials())
 
     print("Evalutation of best performing model:")
-    print(best_model.evaluate_generator(DataGenSequence('valid')))
+    print(best_model.evaluate_generator(validation_generator))
     print("Best performing model chosen hyper-parameters:")
     print(best_run)
