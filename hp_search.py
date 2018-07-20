@@ -1,8 +1,10 @@
 from __future__ import print_function
 
+from math import log
+
 import keras
 from hyperas import optim
-from hyperas.distributions import choice, uniform
+from hyperas.distributions import choice, uniform, loguniform
 from hyperopt import Trials, STATUS_OK, tpe
 from keras.layers import Input, CuDNNLSTM, Bidirectional, TimeDistributed
 from keras.layers.core import Dense, Dropout
@@ -28,7 +30,7 @@ def create_model():
     output = x
     model = Model(inputs=input_tensor, outputs=output)
 
-    adam = keras.optimizers.Adam(lr={{uniform(0, 1)}})
+    adam = keras.optimizers.Adam(lr={{loguniform(log(1e-4), log(1))}})
     model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer=adam)
 
     model.fit_generator(

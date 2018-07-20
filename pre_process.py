@@ -37,7 +37,7 @@ def build_train_vocab_zh():
             vocab.append(word)
 
     counter_vocab = Counter(vocab)
-    common = counter_vocab.most_common(vocab_size_zh-3)
+    common = counter_vocab.most_common(vocab_size_zh - 3)
     vocab = [item[0] for item in common]
     vocab.append(start_word)
     vocab.append(stop_word)
