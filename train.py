@@ -1,12 +1,15 @@
 import argparse
 
 import keras
+import tensorflow as tf
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+from keras.utils import multi_gpu_model
 
 from config import patience, epochs, num_train_samples, num_valid_samples, batch_size
 from data_generator import train_gen, valid_gen
 from model import build_model
 from utils import ensure_folder
+from utils import get_available_gpus
 
 if __name__ == '__main__':
     # Parse arguments
@@ -37,9 +40,21 @@ if __name__ == '__main__':
     # folders
     ensure_folder('models')
 
-    new_model = build_model()
-    if pretrained_path is not None:
-        new_model.load_weights(pretrained_path)
+    # Load our model, added support for Multi-GPUs
+    num_gpu = len(get_available_gpus())
+    if num_gpu >= 2:
+        with tf.device("/cpu:0"):
+            model = build_model()
+            if pretrained_path is not None:
+                model.load_weights(pretrained_path)
+
+        new_model = multi_gpu_model(model, gpus=num_gpu)
+        # rewrite the callback: saving through the original model and not the multi-gpu model.
+        model_checkpoint = MyCbk(model)
+    else:
+        new_model = build_model()
+        if pretrained_path is not None:
+            new_model.load_weights(pretrained_path)
 
     adam = keras.optimizers.Adam(lr=0.002, beta_1=0.9, beta_2=0.999, clipnorm=5., clipvalue=5.)
     new_model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
