@@ -3,6 +3,7 @@ from __future__ import print_function
 from math import log
 
 import keras
+import keras.backend as K
 from hyperas import optim
 from hyperas.distributions import choice, uniform, loguniform
 from hyperopt import Trials, STATUS_OK, tpe
@@ -41,6 +42,7 @@ def create_model():
 
     score, acc = model.evaluate_generator(DataGenSequence('valid'))
     print('Test accuracy:', acc)
+    K.clear_session()
     return {'loss': -acc, 'status': STATUS_OK, 'model': model}
 
 
