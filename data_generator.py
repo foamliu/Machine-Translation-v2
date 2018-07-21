@@ -3,9 +3,9 @@ import pickle
 
 import numpy as np
 from gensim.models import KeyedVectors
-from keras.utils import Sequence, to_categorical
+from keras.utils import Sequence
 
-from config import batch_size, Tx, Ty, embedding_size, vocab_size_zh
+from config import batch_size, Tx, Ty, embedding_size
 from config import start_word, start_embedding, unknown_word, unknown_embedding, stop_word, stop_embedding
 
 
@@ -34,7 +34,7 @@ class DataGenSequence(Sequence):
         length = min(batch_size, (len(self.samples) - i))
 
         batch_x = np.zeros((length, Tx, embedding_size), np.float32)
-        batch_y = np.zeros((length, Ty, vocab_size_zh), np.float32)
+        batch_y = np.zeros((length, Ty), np.int32)
 
         for i_batch in range(length):
             sample = self.samples[i + i_batch]
@@ -54,7 +54,7 @@ class DataGenSequence(Sequence):
 
             output_size = min(Ty, len(sample['output']))
             for idx in range(output_size):
-                batch_y[i_batch, idx] = to_categorical(sample['output'][idx], vocab_size_zh)
+                batch_y[i_batch, idx] = sample['output'][idx]
 
         return batch_x, batch_y
 

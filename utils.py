@@ -6,6 +6,10 @@ import tensorflow as tf
 from tensorflow.python.client import device_lib
 
 
+def sparse_loss(y_true, y_pred):
+    return tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y_true,
+                                                          logits=y_pred)
+
 # getting the number of GPUs
 def get_available_gpus():
     local_device_protos = device_lib.list_local_devices()
