@@ -1,7 +1,7 @@
 import os
 import numpy as np
 
-batch_size = 512
+batch_size = 256
 epochs = 10000
 patience = 50
 num_train_samples = 8852422
