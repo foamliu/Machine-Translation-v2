@@ -55,7 +55,8 @@ if __name__ == '__main__':
         if pretrained_path is not None:
             new_model.load_weights(pretrained_path)
 
-    new_model.compile(optimizer='adam', loss='sparse_categorical_crossentropy')
+    decoder_target = tf.placeholder(dtype='int32', shape=(None, Ty))
+    new_model.compile(optimizer='adam', loss=sparse_loss, target_tensors=[decoder_target])
 
     print(new_model.summary())
 

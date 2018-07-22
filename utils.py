@@ -2,13 +2,13 @@ import multiprocessing
 import os
 
 import cv2 as cv
+import keras.backend as K
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
 
 def sparse_loss(y_true, y_pred):
-    return tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y_true,
-                                                          logits=y_pred)
+    return K.sparse_categorical_crossentropy(y_true, y_pred)
 
 
 # getting the number of GPUs
