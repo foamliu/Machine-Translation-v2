@@ -16,7 +16,7 @@ from model import build_model
 if __name__ == '__main__':
     channel = 3
 
-    model_weights_path = 'models/model.01-87.3772.hdf5'
+    model_weights_path = 'models/model.01-10.3439.hdf5'
     model = build_model()
     model.load_weights(model_weights_path)
 
@@ -62,13 +62,12 @@ if __name__ == '__main__':
 
         x[0, len(tokens)] = stop_embedding
 
-        s0 = np.zeros((length, hidden_size))
-        c0 = np.zeros((length, hidden_size))
-        preds = model.predict([x, s0, c0])
+        preds = model.predict(x)
+        print('preds.shape: ' + str(preds.shape))
 
         output_zh = []
         for t in range(Ty):
-            idx = np.argmax(preds[t][0])
+            idx = np.argmax(preds[0][t])
             word_pred = idx2word_zh[idx]
             output_zh.append(word_pred)
             if word_pred == stop_word:
