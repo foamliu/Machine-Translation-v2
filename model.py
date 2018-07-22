@@ -11,7 +11,8 @@ def build_model():
     input_tensor = Input(shape=(Tx, embedding_size), dtype='float32')
     x = Bidirectional(CuDNNLSTM(hidden_size, return_sequences=True))(input_tensor)
     x = CuDNNLSTM(hidden_size, return_sequences=True)(x)
-    x = CuDNNLSTM(512, return_sequences=True)(x)
+    x = CuDNNLSTM(hidden_size, return_sequences=True)(x)
+    x = CuDNNLSTM(256, return_sequences=True)(x)
     x = TimeDistributed(Dense(vocab_size_zh, activation='linear'))(x)   # NOTE: changed from 'softmax'
     outputs = x
     model = Model(inputs=input_tensor, outputs=outputs)
