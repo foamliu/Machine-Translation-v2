@@ -1,5 +1,8 @@
 import os
-import numpy as np
+
+import torch
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 batch_size = 128
 epochs = 10000
@@ -8,11 +11,10 @@ num_train_samples = 8852422
 num_valid_samples = 7613
 embedding_size = 300
 vocab_size_zh = 50000
-max_token_length_en = Tx = 20 + 1   # 1 is for tailing stop word
-max_token_length_zh = Ty = 20 + 1   # 1 is for tailing stop word
+max_token_length_en = Tx = 20 + 1  # 1 is for tailing stop word
+max_token_length_zh = Ty = 20 + 1  # 1 is for tailing stop word
 
 hidden_size = 1024
-
 
 train_folder = 'data/ai_challenger_translation_train_20170912'
 valid_folder = 'data/ai_challenger_translation_validation_20170912'
@@ -28,6 +30,3 @@ valid_translation_zh_filename = 'valid.zh'
 start_word = '<start>'
 stop_word = '<end>'
 unknown_word = '<unk>'
-start_embedding = np.zeros((embedding_size,))
-stop_embedding = np.ones((embedding_size,))
-unknown_embedding = np.ones((embedding_size,)) / 2
