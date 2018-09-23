@@ -6,6 +6,7 @@ from torch.utils.data import Dataset
 
 from config import *
 
+
 def encode_text(word_map, c):
     return [word_map['<start>']] + [word_map.get(word, word_map['<unk>']) for word in c] + [
         word_map['<end>']] + [word_map['<pad>']] * (max_len - len(c))
