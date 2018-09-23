@@ -1,4 +1,4 @@
-import pickle
+import json
 import xml.etree.ElementTree
 from collections import Counter
 
@@ -11,30 +11,29 @@ from config import *
 from utils import ensure_folder
 
 
-def build_train_vocab_zh():
+def build_wordmap_zh():
     translation_path = os.path.join(train_translation_folder, train_translation_zh_filename)
 
     with open(translation_path, 'r') as f:
-        data = f.readlines()
+        sentences = f.readlines()
 
-    vocab = []
-    print('scanning train data (zh)')
-    for sentence in tqdm(data):
-        seg_list = jieba.cut(sentence.strip())
-        for word in seg_list:
-            vocab.append(word)
+    word_freq = Counter()
 
-    counter_vocab = Counter(vocab)
-    common = counter_vocab.most_common(vocab_size_zh - 3)
-    vocab = [item[0] for item in common]
-    vocab.append(start_word)
-    vocab.append(stop_word)
-    vocab.append(unknown_word)
-    print('vocab size (zh): ' + str(len(vocab)))
+    for sentence in tqdm(sentences):
+        seg_list = jieba.cut(sentence)
+        # Update word frequency
+        word_freq.update(seg_list)
 
-    filename = 'data/vocab_train_zh.p'
-    with open(filename, 'wb') as file:
-        pickle.dump(vocab, file)
+    # Create word map
+    words = [w for w in word_freq.keys() if word_freq[w] > min_word_freq]
+    word_map = {k: v + 1 for v, k in enumerate(words)}
+    word_map['<unk>'] = len(word_map) + 1
+    word_map['<start>'] = len(word_map) + 1
+    word_map['<end>'] = len(word_map) + 1
+    word_map['<pad>'] = 0
+
+    with open('data/WORDMAP_zh.json', 'w') as file:
+        json.dump(word_map, file, indent=4)
 
 
 def extract_valid_data():
@@ -60,7 +59,7 @@ def build_samples():
     print('loading fasttext en word embedding')
     word_vectors = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
 
-    vocab_zh = pickle.load(open('data/vocab_train_zh.p', 'rb'))
+    vocab_zh = json.load(open('data/build_WORDMAP_zh', 'r'))
     idx2word_zh = vocab_zh
     word2idx_zh = dict(zip(idx2word_zh, range(len(vocab_zh))))
 
@@ -68,11 +67,11 @@ def build_samples():
         if usage == 'train':
             translation_path_en = os.path.join(train_translation_folder, train_translation_en_filename)
             translation_path_zh = os.path.join(train_translation_folder, train_translation_zh_filename)
-            filename = 'data/samples_train.p'
+            filename = 'data/samples_train.json'
         else:
             translation_path_en = os.path.join(valid_translation_folder, valid_translation_en_filename)
             translation_path_zh = os.path.join(valid_translation_folder, valid_translation_zh_filename)
-            filename = 'data/samples_valid.p'
+            filename = 'data/samples_valid.json'
 
         print('loading {} texts and vocab'.format(usage))
         with open(translation_path_en, 'r') as f:
@@ -110,18 +109,18 @@ def build_samples():
 
             if len(input_en) <= Tx and len(output_zh) <= Ty:
                 samples.append({'input': list(input_en), 'output': list(output_zh)})
-        with open(filename, 'wb') as f:
-            pickle.dump(samples, f)
+        with open(filename, 'w') as f:
+            json.dump(samples, f)
         print('{} {} samples created at: {}.'.format(len(samples), usage, filename))
 
 
 if __name__ == '__main__':
     ensure_folder('data')
 
-    if not os.path.isfile('data/vocab_train_zh.p'):
-        build_train_vocab_zh()
+    if not os.path.isfile('data/WORDMAP_zh.json'):
+        build_wordmap_zh()
 
     extract_valid_data()
 
-    if not os.path.isfile('data/samples_train.p') or not os.path.isfile('data/samples_valid.p'):
+    if not os.path.isfile('data/samples_train.json') or not os.path.isfile('data/samples_valid.json'):
         build_samples()

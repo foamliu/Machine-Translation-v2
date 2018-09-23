@@ -4,7 +4,7 @@ import torch
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-batch_size = 128
+batch_size = 32
 epochs = 10000
 patience = 50
 num_train_samples = 8852422
@@ -16,6 +16,7 @@ max_token_length_zh = Ty = 20 + 1  # 1 is for tailing stop word
 MAX_LENGTH = 21
 teacher_forcing_ratio = 0.5
 hidden_size = 1024
+min_word_freq = 3
 
 train_folder = 'data/ai_challenger_translation_train_20170912'
 valid_folder = 'data/ai_challenger_translation_validation_20170912'

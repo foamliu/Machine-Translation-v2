@@ -1,11 +1,10 @@
-import os
 from collections import Counter
 
 import nltk
 from gensim.models import KeyedVectors
 from tqdm import tqdm
 
-from config import train_translation_folder, train_translation_zh_filename, train_translation_en_filename
+from config import *
 
 
 def train_length_zh():
@@ -57,7 +56,7 @@ def train_length_en():
     print('max_len: ' + str(max_len))
 
     counter_length = Counter(lengthes)
-    total_count = 0
+    total_count = len(data)
     common = counter_length.most_common()
     covered_count = 0
     for i in range(1, max_len + 1):
