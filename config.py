@@ -13,7 +13,8 @@ embedding_size = 300
 vocab_size_zh = 50000
 max_token_length_en = Tx = 20 + 1  # 1 is for tailing stop word
 max_token_length_zh = Ty = 20 + 1  # 1 is for tailing stop word
-
+MAX_LENGTH = 21
+teacher_forcing_ratio = 0.5
 hidden_size = 1024
 
 train_folder = 'data/ai_challenger_translation_train_20170912'
