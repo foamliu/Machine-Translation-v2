@@ -31,8 +31,38 @@ def build_wordmap_zh():
     word_map['<start>'] = len(word_map) + 1
     word_map['<end>'] = len(word_map) + 1
     word_map['<pad>'] = 0
+    print(len(word_map))
+    print(words[:10])
 
     with open('data/WORDMAP_zh.json', 'w') as file:
+        json.dump(word_map, file, indent=4)
+
+
+def build_wordmap_en():
+    translation_path = os.path.join(train_translation_folder, train_translation_en_filename)
+
+    with open(translation_path, 'r') as f:
+        sentences = f.readlines()
+
+    word_freq = Counter()
+
+    for sentence in tqdm(sentences):
+        sentence_en = sentence.strip().lower()
+        tokens = nltk.word_tokenize(sentence_en)
+        # Update word frequency
+        word_freq.update(tokens)
+
+    # Create word map
+    words = [w for w in word_freq.keys() if word_freq[w] > min_word_freq]
+    word_map = {k: v + 1 for v, k in enumerate(words)}
+    word_map['<unk>'] = len(word_map) + 1
+    word_map['<start>'] = len(word_map) + 1
+    word_map['<end>'] = len(word_map) + 1
+    word_map['<pad>'] = 0
+    print(len(word_map))
+    print(words[:10])
+
+    with open('data/WORDMAP_en.json', 'w') as file:
         json.dump(word_map, file, indent=4)
 
 
