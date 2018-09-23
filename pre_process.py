@@ -26,11 +26,11 @@ def build_wordmap_zh():
 
     # Create word map
     words = [w for w in word_freq.keys() if word_freq[w] > min_word_freq]
-    word_map = {k: v + 1 for v, k in enumerate(words)}
-    word_map['<unk>'] = len(word_map) + 1
-    word_map['<start>'] = len(word_map) + 1
-    word_map['<end>'] = len(word_map) + 1
-    word_map['<pad>'] = 0
+    word_map = {k: v + 4 for v, k in enumerate(words)}
+    word_map['<start>'] = 0
+    word_map['<end>'] = 1
+    word_map['<unk>'] = 2
+    word_map['<pad>'] = 3
     print(len(word_map))
     print(words[:10])
 
@@ -54,11 +54,11 @@ def build_wordmap_en():
 
     # Create word map
     words = [w for w in word_freq.keys() if word_freq[w] > min_word_freq]
-    word_map = {k: v + 1 for v, k in enumerate(words)}
-    word_map['<unk>'] = len(word_map) + 1
-    word_map['<start>'] = len(word_map) + 1
-    word_map['<end>'] = len(word_map) + 1
-    word_map['<pad>'] = 0
+    word_map = {k: v + 4 for v, k in enumerate(words)}
+    word_map['<start>'] = 0
+    word_map['<end>'] = 1
+    word_map['<unk>'] = 2
+    word_map['<pad>'] = 3
     print(len(word_map))
     print(words[:10])
 

@@ -1,9 +1,16 @@
 import math
-import time
 import random
+import time
+
+import matplotlib.pyplot as plt
+from torch import nn
 from torch import optim
 
 from config import *
+from models import EncoderRNN, AttnDecoderRNN
+
+plt.switch_backend('agg')
+import matplotlib.ticker as ticker
 
 
 def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion,
@@ -89,6 +96,15 @@ def tensorsFromPair(pair):
     return (input_tensor, target_tensor)
 
 
+def showPlot(points):
+    plt.figure()
+    fig, ax = plt.subplots()
+    # this locator puts ticks at regular intervals
+    loc = ticker.MultipleLocator(base=0.2)
+    ax.yaxis.set_major_locator(loc)
+    plt.plot(points)
+
+
 def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, learning_rate=0.01):
     start = time.time()
     plot_losses = []
@@ -123,3 +139,10 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lear
             plot_loss_total = 0
 
     showPlot(plot_losses)
+
+
+if __name__ == '__main__':
+    encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
+    attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
+
+    trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
