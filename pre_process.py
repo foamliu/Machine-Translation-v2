@@ -149,6 +149,8 @@ if __name__ == '__main__':
 
     if not os.path.isfile('data/WORDMAP_zh.json'):
         build_wordmap_zh()
+    if not os.path.isfile('data/WORDMAP_en.json'):
+        build_wordmap_en()
 
     extract_valid_data()
 
