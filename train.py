@@ -7,7 +7,7 @@ from keras.utils import multi_gpu_model
 
 from config import patience, epochs, num_train_samples, num_valid_samples, batch_size, Ty
 from data_generator import train_gen, valid_gen
-from model import build_model
+from models import build_model
 from utils import ensure_folder, sparse_loss, get_available_gpus
 
 if __name__ == '__main__':

@@ -11,7 +11,7 @@ from gensim.models import KeyedVectors
 from config import stop_word, unknown_word, Tx, Ty, embedding_size, hidden_size, unknown_embedding, stop_embedding, \
     vocab_size_zh
 from config import valid_translation_folder, valid_translation_en_filename, valid_translation_zh_filename
-from model import build_model
+from models import build_model
 
 if __name__ == '__main__':
     channel = 3
