@@ -90,8 +90,8 @@ def extract_valid_data():
 
 
 def build_samples():
-    word_map_zh = json.load(open('data/build_WORDMAP_zh', 'r'))
-    word_map_en = json.load(open('data/build_WORDMAP_en', 'r'))
+    word_map_zh = json.load(open('data/WORDMAP_zh.json', 'r'))
+    word_map_en = json.load(open('data/WORDMAP_en.json', 'r'))
 
     for usage in ['train', 'valid']:
         if usage == 'train':
@@ -123,6 +123,7 @@ def build_samples():
 
             if len(input_en) <= max_len and len(output_zh) <= max_len:
                 samples.append({'input': list(input_en), 'output': list(output_zh)})
+
         with open(filename, 'w') as f:
             json.dump(samples, f)
         print('{} {} samples created at: {}.'.format(len(samples), usage, filename))
