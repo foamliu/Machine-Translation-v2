@@ -5,12 +5,17 @@ import torch
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 batch_size = 32
+workers = 1
 epochs = 10000
 patience = 50
 max_len = 100
 teacher_forcing_ratio = 0.5
 hidden_size = 256
 min_word_freq = 3
+input_lang_n_words = 0
+output_lang_n_words = 0
+start_epoch = 0
+epochs = 120
 
 train_folder = 'data/ai_challenger_translation_train_20170912'
 valid_folder = 'data/ai_challenger_translation_validation_20170912'
