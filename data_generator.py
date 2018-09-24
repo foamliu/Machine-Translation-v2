@@ -20,7 +20,7 @@ class TranslationDataset(Dataset):
 
     def __getitem__(self, i):
         sample = self.samples[i]
-        return torch.cuda.LongTensor(sample['input']), torch.cuda.LongTensor(sample['output'])
+        return torch.tensor(sample['input']), torch.tensor(sample['output'])
 
     def __len__(self):
         return self.dataset_size
