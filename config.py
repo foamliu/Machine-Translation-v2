@@ -12,8 +12,8 @@ max_len = 100
 teacher_forcing_ratio = 0.5
 hidden_size = 256
 min_word_freq = 3
-input_lang_n_words = 0
-output_lang_n_words = 0
+input_lang_n_words = 161115
+output_lang_n_words = 235883
 start_epoch = 0
 epochs = 120
 
