@@ -16,6 +16,8 @@ import matplotlib.ticker as ticker
 
 def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, max_length=max_len):
     encoder_hidden = encoder.initHidden()
+    start = time.time()
+    print_loss_total = 0  # Reset every print_every
 
     # Batches
     for i, (input_tensor, target_tensor) in enumerate(train_loader):
@@ -64,11 +66,18 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
                     break
 
         loss.backward()
+        print_loss_total += loss.item()
 
         encoder_optimizer.step()
         decoder_optimizer.step()
 
-    return loss.item() / target_length
+        if i % print_every == 0:
+            print_loss_avg = print_loss_total / print_every
+            print_loss_total = 0
+            print('%s (%d %d%%) %.4f' % (timeSince(start, i / num_train_samples),
+                                         num_train_samples, i / num_train_samples * 100, print_loss_avg))
+
+    return loss.item()
 
 
 def asMinutes(s):
@@ -94,10 +103,8 @@ def showPlot(points):
     plt.plot(points)
 
 
-def trainIters(train_loader, encoder, decoder, print_every=1, plot_every=1, learning_rate=0.01):
-    start = time.time()
+def trainIters(train_loader, encoder, decoder, plot_every=1, learning_rate=0.01):
     plot_losses = []
-    print_loss_total = 0  # Reset every print_every
     plot_loss_total = 0  # Reset every plot_every
 
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
@@ -107,14 +114,7 @@ def trainIters(train_loader, encoder, decoder, print_every=1, plot_every=1, lear
     # Epochs
     for epoch in range(start_epoch, epochs):
         loss = train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
-        print_loss_total += loss
         plot_loss_total += loss
-
-        if epoch % print_every == 0:
-            print_loss_avg = print_loss_total / print_every
-            print_loss_total = 0
-            print('%s (%d %d%%) %.4f' % (timeSince(start, epoch / epochs),
-                                         epoch, epoch / epochs * 100, print_loss_avg))
 
         if epoch % plot_every == 0:
             plot_loss_avg = plot_loss_total / plot_every

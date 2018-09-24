@@ -18,7 +18,7 @@ start_epoch = 0
 epochs = 120
 num_train_samples = 8572328
 num_valid_samples = 7073
-
+print_every = 1000
 
 train_folder = 'data/ai_challenger_translation_train_20170912'
 valid_folder = 'data/ai_challenger_translation_validation_20170912'
