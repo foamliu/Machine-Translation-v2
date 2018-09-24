@@ -24,9 +24,7 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         encoder_optimizer.zero_grad()
         decoder_optimizer.zero_grad()
         input_tensor = input_tensor[0].to(device)
-        print(input_tensor.size())
         target_tensor = target_tensor[0].to(device)
-        print(target_tensor.size())
         input_length = max_length
         target_length = max_length
 
@@ -58,6 +56,7 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
             for di in range(target_length):
                 decoder_output, decoder_hidden, decoder_attention = decoder(
                     decoder_input, decoder_hidden, encoder_outputs)
+                print(decoder_output.size())
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.squeeze().detach()  # detach from history as input
 
