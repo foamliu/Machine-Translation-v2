@@ -23,9 +23,9 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
     for i, (input_tensor, target_tensor) in enumerate(train_loader):
         encoder_optimizer.zero_grad()
         decoder_optimizer.zero_grad()
-        input_tensor = input_tensor.to(device)
+        input_tensor = input_tensor[0].to(device)
         print(input_tensor.size())
-        target_tensor = target_tensor.to(device)
+        target_tensor = target_tensor[0].to(device)
         print(target_tensor.size())
         input_length = max_length
         target_length = max_length
