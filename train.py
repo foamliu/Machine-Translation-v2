@@ -3,7 +3,6 @@ import random
 import time
 
 import matplotlib.pyplot as plt
-import numpy as np
 from torch import nn
 from torch import optim
 
@@ -19,12 +18,11 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
     encoder_hidden = encoder.initHidden()
 
     # Batches
-    for i, sample in enumerate(train_loader):
+    for i, (input_tensor, target_tensor) in enumerate(train_loader):
         encoder_optimizer.zero_grad()
         decoder_optimizer.zero_grad()
-        print(sample['input'])
-        input_tensor = torch.cuda.LongTensor(np.array(sample['input']), device=device)
-        target_tensor = torch.cuda.LongTensor(np.array(sample['output']), device=device)
+        input_tensor = input_tensor.to(device)
+        target_tensor = target_tensor.to(device)
         input_length = max_length
         target_length = max_length
 

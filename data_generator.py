@@ -20,7 +20,7 @@ class TranslationDataset(Dataset):
 
     def __getitem__(self, i):
         sample = self.samples[i]
-        return sample
+        return sample['input'], sample['output']
 
     def __len__(self):
         return self.dataset_size
