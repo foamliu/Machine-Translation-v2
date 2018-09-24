@@ -1,6 +1,6 @@
 # encoding=utf-8
 import json
-
+import torch
 from torch.utils.data import Dataset
 
 
@@ -20,7 +20,7 @@ class TranslationDataset(Dataset):
 
     def __getitem__(self, i):
         sample = self.samples[i]
-        return sample['input'], sample['output']
+        return torch.cuda.LongTensor(sample['input']), torch.cuda.LongTensor(sample['output'])
 
     def __len__(self):
         return self.dataset_size
