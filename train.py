@@ -22,9 +22,9 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
     for i, sample in enumerate(train_loader):
         encoder_optimizer.zero_grad()
         decoder_optimizer.zero_grad()
-
-        input_tensor = torch.cuda.IntTensor(np.array(sample['input']), device=device)
-        target_tensor = torch.cuda.IntTensor(np.array(sample['output']), device=device)
+        print(sample['input'])
+        input_tensor = torch.cuda.LongTensor(np.array(sample['input']), device=device)
+        target_tensor = torch.cuda.LongTensor(np.array(sample['output']), device=device)
         input_length = max_length
         target_length = max_length
 
