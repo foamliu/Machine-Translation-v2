@@ -120,7 +120,7 @@ def build_samples():
             seg_list = jieba.cut(sentence_zh)
             output_zh = encode_text(word_map_zh, list(seg_list))
 
-            if len(input_en) <= max_len + 2 and len(output_zh) <= max_len + 2:
+            if len(input_en) <= max_len and len(output_zh) <= max_len:
                 samples.append({'input': list(input_en), 'output': list(output_zh)})
 
         with open(filename, 'w') as f:
