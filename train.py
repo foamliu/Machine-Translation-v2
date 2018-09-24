@@ -3,6 +3,7 @@ import random
 import time
 
 import matplotlib.pyplot as plt
+import numpy as np
 from torch import nn
 from torch import optim
 
@@ -22,8 +23,8 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         encoder_optimizer.zero_grad()
         decoder_optimizer.zero_grad()
 
-        input_tensor = torch.tensor(sample['input'], device=device)
-        target_tensor = torch.tensor(sample['output'], device=device)
+        input_tensor = torch.cuda.IntTensor(np.array(sample['input']), device=device)
+        target_tensor = torch.cuda.IntTensor(np.array(sample['output']), device=device)
         input_length = max_length
         target_length = max_length
 
