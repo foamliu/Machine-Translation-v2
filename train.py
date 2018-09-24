@@ -22,8 +22,8 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         encoder_optimizer.zero_grad()
         decoder_optimizer.zero_grad()
 
-        input_tensor = sample['input']
-        target_tensor = sample['output']
+        input_tensor = torch.tensor(sample['input'], device=device)
+        target_tensor = torch.tensor(sample['output'], device=device)
         input_length = max_length
         target_length = max_length
 
