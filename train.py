@@ -14,7 +14,7 @@ import matplotlib.ticker as ticker
 
 
 def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion,
-          max_length=MAX_LENGTH):
+          max_length=max_len):
     encoder_hidden = encoder.initHidden()
 
     encoder_optimizer.zero_grad()

@@ -11,6 +11,11 @@ from config import *
 from utils import ensure_folder
 
 
+def encode_text(word_map, c):
+    return [word_map['<start>']] + [word_map.get(word, word_map['<unk>']) for word in c] + [
+        word_map['<end>']] + [word_map['<pad>']] * (max_len - len(c))
+
+
 def build_wordmap_zh():
     translation_path = os.path.join(train_translation_folder, train_translation_zh_filename)
 
@@ -86,12 +91,8 @@ def extract_valid_data():
 
 
 def build_samples():
-    print('loading fasttext en word embedding')
-    word_vectors = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
-
-    vocab_zh = json.load(open('data/build_WORDMAP_zh', 'r'))
-    idx2word_zh = vocab_zh
-    word2idx_zh = dict(zip(idx2word_zh, range(len(vocab_zh))))
+    word_map_zh = json.load(open('data/build_WORDMAP_zh', 'r'))
+    word_map_en = json.load(open('data/build_WORDMAP_en', 'r'))
 
     for usage in ['train', 'valid']:
         if usage == 'train':
@@ -114,30 +115,14 @@ def build_samples():
         samples = []
         for idx in tqdm(range(len(data_en))):
             sentence_en = data_en[idx].strip().lower()
-            input_en = []
             tokens = nltk.word_tokenize(sentence_en)
-            for token in tokens:
-                try:
-                    temp = word_vectors[token]
-                    word = token
-                except KeyError:
-                    word = unknown_word
-
-                input_en.append(word)
-            input_en.append(stop_word)
+            input_en = encode_text(word_map_en, tokens)
 
             sentence_zh = data_zh[idx].strip()
             seg_list = jieba.cut(sentence_zh)
-            output_zh = []
-            for word in seg_list:
-                try:
-                    idx = word2idx_zh[word]
-                except KeyError:
-                    idx = word2idx_zh[unknown_word]
-                output_zh.append(idx)
-            output_zh.append(word2idx_zh[stop_word])
+            output_zh = encode_text(word_map_zh, list(seg_list))
 
-            if len(input_en) <= Tx and len(output_zh) <= Ty:
+            if len(input_en) <= max_len and len(output_zh) <= max_len:
                 samples.append({'input': list(input_en), 'output': list(output_zh)})
         with open(filename, 'w') as f:
             json.dump(samples, f)
