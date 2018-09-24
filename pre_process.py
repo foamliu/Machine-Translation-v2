@@ -4,7 +4,6 @@ from collections import Counter
 
 import jieba
 import nltk
-from gensim.models import KeyedVectors
 from tqdm import tqdm
 
 from config import *
