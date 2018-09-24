@@ -7,7 +7,6 @@ import nltk
 from tqdm import tqdm
 
 from config import *
-from utils import ensure_folder
 
 
 def encode_text(word_map, c):
@@ -121,7 +120,7 @@ def build_samples():
             seg_list = jieba.cut(sentence_zh)
             output_zh = encode_text(word_map_zh, list(seg_list))
 
-            if len(input_en) <= max_len and len(output_zh) <= max_len:
+            if len(input_en) <= max_len + 2 and len(output_zh) <= max_len + 2:
                 samples.append({'input': list(input_en), 'output': list(output_zh)})
 
         with open(filename, 'w') as f:
@@ -130,14 +129,7 @@ def build_samples():
 
 
 if __name__ == '__main__':
-    ensure_folder('data')
-
-    if not os.path.isfile('data/WORDMAP_zh.json'):
-        build_wordmap_zh()
-    if not os.path.isfile('data/WORDMAP_en.json'):
-        build_wordmap_en()
-
+    build_wordmap_zh()
+    build_wordmap_en()
     extract_valid_data()
-
-    if not os.path.isfile('data/samples_train.json') or not os.path.isfile('data/samples_valid.json'):
-        build_samples()
+    build_samples()
