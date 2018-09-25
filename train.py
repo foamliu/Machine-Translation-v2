@@ -105,7 +105,7 @@ def train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_opti
         decoder_optimizer.step()
 
         # Keep track of metrics
-        losses.update(loss.item())
+        losses.update(loss.item(), target_length)
         batch_time.update(time.time() - start)
 
         start = time.time()
