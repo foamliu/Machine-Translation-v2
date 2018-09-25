@@ -43,12 +43,12 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
     print_loss_total = 0  # Reset every print_every
 
     # Batches
-    for i, (input_tensor, target_tensor) in enumerate(train_loader):
+    for i, (input_array, target_array) in enumerate(train_loader):
         start = time.time()
 
         # Move to GPU, if available
-        input_tensor = input_tensor.view(-1, 1).to(device)
-        target_tensor = target_tensor.view(-1, 1).to(device)
+        input_tensor = torch.tensor(input_array, dtype=torch.long, device=device).view(-1, 1)
+        target_tensor = torch.tensor(target_array, dtype=torch.long, device=device).view(-1, 1)
         # print('input_tensor: ' + str(input_tensor))
         print('target_tensor: ' + str(target_tensor))
         # print('input_tensor.size(): ' + str(input_tensor.size()))
