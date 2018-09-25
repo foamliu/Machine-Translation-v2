@@ -37,7 +37,7 @@ def showPlot(points):
     plt.plot(points)
 
 
-def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, max_length=max_len):
+def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion):
     encoder_hidden = encoder.initHidden()
     start = time.time()
     print_loss_total = 0  # Reset every print_every
@@ -48,10 +48,10 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         decoder_optimizer.zero_grad()
         input_tensor = input_tensor[0].to(device)
         target_tensor = target_tensor[0].to(device)
-        input_length = max_length
-        target_length = max_length
+        input_length = max_len
+        target_length = max_len
 
-        encoder_outputs = torch.zeros(max_length, encoder.hidden_size, device=device)
+        encoder_outputs = torch.zeros(max_len, encoder.hidden_size, device=device)
 
         loss = 0
 
@@ -71,6 +71,8 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
             for di in range(target_length):
                 decoder_output, decoder_hidden, decoder_attention = decoder(
                     decoder_input, decoder_hidden, encoder_outputs)
+                print(decoder_output.size())
+                print(target_tensor[di].size())
                 loss += criterion(decoder_output, target_tensor[di])
                 decoder_input = target_tensor[di]  # Teacher forcing
 
