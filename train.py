@@ -39,11 +39,11 @@ def showPlot(points):
 
 def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion):
     encoder_hidden = encoder.initHidden()
-    start = time.time()
     print_loss_total = 0  # Reset every print_every
 
     # Batches
     for i, (input_tensor, target_tensor) in enumerate(train_loader):
+        start = time.time()
         encoder_optimizer.zero_grad()
         decoder_optimizer.zero_grad()
         input_tensor = input_tensor.to(device)
