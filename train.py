@@ -50,8 +50,8 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         target_tensor = target_tensor.view(-1, 1).to(device)
         # print('input_tensor: ' + str(input_tensor))
         # print('target_tensor: ' + str(target_tensor))
-        print('input_tensor.size(): ' + str(input_tensor.size()))
-        print('target_tensor.size(): ' + str(target_tensor.size()))
+        # print('input_tensor.size(): ' + str(input_tensor.size()))
+        # print('target_tensor.size(): ' + str(target_tensor.size()))
 
         input_length = max_len
         target_length = max_len
