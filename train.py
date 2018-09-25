@@ -46,7 +46,7 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
     for i, (input_tensor, target_tensor) in enumerate(train_loader):
         encoder_optimizer.zero_grad()
         decoder_optimizer.zero_grad()
-        input_tensor = input_tensor[0].to(device)
+        input_tensor = input_tensor.to(device)
         target_tensor = target_tensor.to(device)
         input_length = max_len
         target_length = max_len
@@ -56,7 +56,7 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         loss = 0
 
         for ei in range(input_length):
-            encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
+            encoder_output, encoder_hidden = encoder(input_tensor[0, ei], encoder_hidden)
             encoder_outputs[ei] = encoder_output[0, 0]
 
         decoder_input = torch.tensor([[SOS_token]], device=device)
@@ -65,12 +65,16 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
 
         use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
 
+        print('decoder_input.size(): ' + str(decoder_input.size()))
+        print('decoder_hidden.size(): ' + str(decoder_hidden.size()))
+        print('encoder_outputs.size(): ' + str(encoder_outputs.size()))
+
         if use_teacher_forcing:
             # Teacher forcing: Feed the target as the next input
             for di in range(target_length):
                 decoder_output, decoder_hidden, decoder_attention = decoder(
                     decoder_input, decoder_hidden, encoder_outputs)
-                print(decoder_output.size())
+                print('decoder_output.size(): ' + str(decoder_output.size()))
                 print(target_tensor.size())
                 print(target_tensor[:, di].size())
                 print(target_tensor[:, di])
