@@ -47,8 +47,8 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         start = time.time()
 
         # Move to GPU, if available
-        input_tensor = torch.tensor(input_array, dtype=torch.long, device=device).view(-1, 1)
-        target_tensor = torch.tensor(target_array, dtype=torch.long, device=device).view(-1, 1)
+        input_tensor = torch.tensor(input_array, device=device).view(-1, 1)
+        target_tensor = torch.tensor(target_array, device=device).view(-1, 1)
         # print('input_tensor: ' + str(input_tensor))
         print('target_tensor: ' + str(target_tensor))
         # print('input_tensor.size(): ' + str(input_tensor.size()))
