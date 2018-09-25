@@ -9,6 +9,7 @@ from torch import optim
 from config import *
 from data_generator import TranslationDataset
 from models import EncoderRNN, AttnDecoderRNN
+from utils import AverageMeter
 
 plt.switch_backend('agg')
 import matplotlib.ticker as ticker
@@ -72,11 +73,14 @@ def calc_loss(input_tensor, input_length, target_tensor, target_length, encoder,
             if decoder_input.item() == EOS_token:
                 break
 
-    return loss
+    return loss / target_length
 
 
-def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion):
+def train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion):
     print_loss_total = 0  # Reset every print_every
+
+    batch_time = AverageMeter()  # forward prop. + back prop. time
+    losses = AverageMeter()  # loss (per word decoded)
 
     # Batches
     for i, (input_array, target_array) in enumerate(train_loader):
@@ -99,17 +103,28 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         encoder_optimizer.step()
         decoder_optimizer.step()
 
+        # Keep track of metrics
+        losses.update(loss.item())
+        batch_time.update(time.time() - start)
+
+        start = time.time()
+
         if (i + 1) % print_every == 0:
             print_loss_avg = print_loss_total / print_every
             print_loss_total = 0
             print('%s (%d %d%%) %.4f' % (timeSince(start, (i + 1) / num_train_samples),
                                          num_train_samples, (i + 1) / num_train_samples * 100, print_loss_avg))
+            print('Epoch: [{0}][{1}/{2}]\t'
+                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(epoch, i, len(train_loader),
+                                                                  loss=losses))
 
-    return loss.item() / target_length
+    return loss.item()
 
 
 def trainIters(train_loader, encoder, decoder, learning_rate=0.01):
     plot_losses = []
+    decoder.train()  # train mode (dropout and batchnorm is used)
+    encoder.train()
 
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
@@ -117,7 +132,7 @@ def trainIters(train_loader, encoder, decoder, learning_rate=0.01):
 
     # Epochs
     for epoch in range(start_epoch, epochs):
-        loss = train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
+        loss = train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
         plot_losses.append(loss)
 
     showPlot(plot_losses)

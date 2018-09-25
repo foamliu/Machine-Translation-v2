@@ -1,14 +1,7 @@
 import multiprocessing
 import os
 
-import cv2 as cv
-import keras.backend as K
-import tensorflow as tf
 from tensorflow.python.client import device_lib
-
-
-def sparse_loss(y_true, y_pred):
-    return K.sparse_categorical_crossentropy(y_true, y_pred)
 
 
 # getting the number of GPUs
@@ -22,15 +15,25 @@ def get_available_cpus():
     return multiprocessing.cpu_count()
 
 
-def draw_str(dst, target, s):
-    x, y = target
-    cv.putText(dst, s, (x + 1, y + 1), cv.FONT_HERSHEY_PLAIN, 1.0, (0, 0, 0), thickness=2, lineType=cv.LINE_AA)
-    cv.putText(dst, s, (x, y), cv.FONT_HERSHEY_PLAIN, 1.0, (255, 255, 255), lineType=cv.LINE_AA)
+class AverageMeter(object):
+    """
+    Keeps track of most recent, average, sum, and count of a metric.
+    """
 
+    def __init__(self):
+        self.reset()
 
-def sparse_loss(y_true, y_pred):
-    loss_mean = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
-    return tf.reduce_sum(loss_mean)
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
 
 
 def ensure_folder(folder):
