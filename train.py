@@ -55,7 +55,7 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         print('target_tensor.size(): ' + str(target_tensor.size()))
 
         input_length = max_len
-        target_length = np.where(target_tensor.cpu().numpy() == EOS_token)
+        target_length = np.where(target_tensor.cpu().numpy() == EOS_token)[0][0]
         print('target_length: ' + str(target_length))
 
         encoder_outputs = torch.zeros(max_len, encoder.hidden_size, device=device)
