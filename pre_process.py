@@ -51,7 +51,7 @@ def build_wordmap_en():
 
     for sentence in tqdm(sentences):
         sentence_en = sentence.strip().lower()
-        tokens = [normalizeString(s) for s in sentence_en.split()]
+        tokens = [normalizeString(s) for s in nltk.word_tokenize(sentence_en)]
         # Update word frequency
         word_freq.update(tokens)
 
@@ -112,8 +112,8 @@ def build_samples():
         print('building {} samples'.format(usage))
         samples = []
         for idx in tqdm(range(len(data_en))):
-            sentence_en = data_en[idx]
-            tokens = [normalizeString(s) for s in sentence_en.split()]
+            sentence_en = data_en[idx].strip().lower()
+            tokens = [normalizeString(s) for s in nltk.word_tokenize(sentence_en)]
             input_en = encode_text(word_map_en, tokens)
 
             sentence_zh = data_zh[idx].strip()
