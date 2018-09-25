@@ -1,7 +1,9 @@
 # encoding=utf-8
 import json
-import torch
+
 from torch.utils.data import Dataset
+
+from config import *
 
 
 class TranslationDataset(Dataset):
@@ -20,7 +22,9 @@ class TranslationDataset(Dataset):
 
     def __getitem__(self, i):
         sample = self.samples[i]
-        return torch.tensor(sample['input']), torch.tensor(sample['output'])
+        input_tensor = torch.tensor(sample['input'], dtype=torch.long, device=device).view(-1, 1)
+        target_tensor = torch.tensor(sample['output'], dtype=torch.long, device=device).view(-1, 1)
+        return (input_tensor, target_tensor)
 
     def __len__(self):
         return self.dataset_size

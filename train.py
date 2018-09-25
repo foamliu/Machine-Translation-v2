@@ -48,6 +48,8 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         # Move to GPU, if available
         input_tensor = input_tensor.to(device)
         target_tensor = target_tensor.to(device)
+        print('input_tensor.size: ' + str(input_tensor.size))
+        print('target_tensor.size: ' + str(target_tensor.size))
 
         # Back prop.
         encoder_optimizer.zero_grad()

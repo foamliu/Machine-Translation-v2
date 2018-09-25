@@ -6,7 +6,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 batch_size = 1
 workers = 1
-epochs = 10000
 patience = 50
 max_len = 20
 teacher_forcing_ratio = 0.5
