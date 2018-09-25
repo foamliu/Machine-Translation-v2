@@ -57,6 +57,7 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
                 decoder_output, decoder_hidden, decoder_attention = decoder(
                     decoder_input, decoder_hidden, encoder_outputs)
                 print(decoder_output.size())
+                print(target_tensor[di].size())
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.squeeze().detach()  # detach from history as input
 
