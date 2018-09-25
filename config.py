@@ -4,7 +4,7 @@ import torch
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-batch_size = 1
+batch_size = 32
 workers = 1
 patience = 50
 max_len = 20
