@@ -54,7 +54,7 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         # print('target_tensor.size(): ' + str(target_tensor.size()))
 
         input_length = max_len
-        target_length = max_len
+        target_length = target_tensor.item().index(EOS_token)
 
         encoder_outputs = torch.zeros(max_len, encoder.hidden_size, device=device)
 
@@ -106,7 +106,7 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
             print('%s (%d %d%%) %.4f' % (timeSince(start, (i + 1) / num_train_samples),
                                          num_train_samples, (i + 1) / num_train_samples * 100, print_loss_avg))
 
-    return loss.item()
+    return loss.item() / target_length
 
 
 def trainIters(train_loader, encoder, decoder, learning_rate=0.01):
