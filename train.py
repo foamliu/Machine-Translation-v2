@@ -54,7 +54,7 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         # print('input_tensor.size(): ' + str(input_tensor.size()))
         print('target_tensor.size(): ' + str(target_tensor.size()))
 
-        input_length = np.where(target_tensor.cpu().numpy() == EOS_token)[0][0]
+        input_length = np.where(input_tensor.cpu().numpy() == EOS_token)[0][0]
         target_length = np.where(target_tensor.cpu().numpy() == EOS_token)[0][0]
         print('input_length: ' + str(input_length))
         print('target_length: ' + str(target_length))
