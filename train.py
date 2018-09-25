@@ -75,9 +75,8 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
                 decoder_output, decoder_hidden, decoder_attention = decoder(
                     decoder_input, decoder_hidden, encoder_outputs)
                 print('decoder_output.size(): ' + str(decoder_output.size()))
-                print(target_tensor.size())
-                print(target_tensor[:, di].size())
-                print(target_tensor[:, di])
+                print('target_tensor[:, di].size(): ' + str(target_tensor[:, di].size()))
+                print('target_tensor[:, di].size(): ' + str(target_tensor[:, di].size()))
                 loss += criterion(decoder_output, target_tensor[:, di])
                 decoder_input = target_tensor[di]  # Teacher forcing
 
@@ -86,10 +85,9 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
             for di in range(target_length):
                 decoder_output, decoder_hidden, decoder_attention = decoder(
                     decoder_input, decoder_hidden, encoder_outputs)
-                print(decoder_output.size())
-                print(target_tensor.size())
-                print(target_tensor[:, di].size())
-                print(target_tensor[:, di])
+                print('decoder_output.size(): ' + str(decoder_output.size()))
+                print('target_tensor[:, di].size(): ' + str(target_tensor[:, di].size()))
+                print('target_tensor[:, di].size(): ' + str(target_tensor[:, di].size()))
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.squeeze().detach()  # detach from history as input
 
