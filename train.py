@@ -82,9 +82,10 @@ def train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_opti
     batch_time = AverageMeter()  # forward prop. + back prop. time
     losses = AverageMeter()  # loss (per word decoded)
 
+    start = time.time()
+
     # Batches
     for i, (input_array, target_array) in enumerate(train_loader):
-        start = time.time()
         # Move to GPU, if available
         input_tensor = torch.tensor(input_array, device=device).view(-1, 1)
         target_tensor = torch.tensor(target_array, device=device).view(-1, 1)
@@ -109,13 +110,12 @@ def train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_opti
 
         start = time.time()
 
-        if (i + 1) % print_every == 0:
-            print_loss_avg = print_loss_total / print_every
+        if i % print_every == 0:
             print_loss_total = 0
-            print('%s (%d %d%%) %.4f' % (timeSince(start, (i + 1) / num_train_samples),
-                                         num_train_samples, (i + 1) / num_train_samples * 100, print_loss_avg))
             print('Epoch: [{0}][{1}/{2}]\t'
+                  'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(epoch, i, len(train_loader),
+                                                                  batch_time=batch_time,
                                                                   loss=losses))
 
     return loss.item()
