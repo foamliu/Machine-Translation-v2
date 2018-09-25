@@ -74,6 +74,7 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
                 print(target_tensor.size())
                 print(di)
                 print(target_tensor[di].size())
+                print(target_tensor[di])
                 loss += criterion(decoder_output, target_tensor[di])
                 decoder_input = target_tensor[di]  # Teacher forcing
 
@@ -86,6 +87,7 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
                 print(target_tensor.size())
                 print(di)
                 print(target_tensor[di].size())
+                print(target_tensor[di])
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.squeeze().detach()  # detach from history as input
 
