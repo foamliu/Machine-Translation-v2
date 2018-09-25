@@ -2,11 +2,12 @@ import json
 import xml.etree.ElementTree
 from collections import Counter
 
-import jieba
+# import jieba
 import nltk
 from tqdm import tqdm
 
 from config import *
+from utils import normalizeString
 
 
 def encode_text(word_map, c):
@@ -22,9 +23,9 @@ def build_wordmap_zh():
     word_freq = Counter()
 
     for sentence in tqdm(sentences):
-        seg_list = jieba.cut(sentence)
+        # seg_list = jieba.cut(sentence)
         # Update word frequency
-        word_freq.update(seg_list)
+        word_freq.update(list(sentence))
 
     # Create word map
     words = [w for w in word_freq.keys() if word_freq[w] > min_word_freq]
@@ -50,7 +51,7 @@ def build_wordmap_en():
 
     for sentence in tqdm(sentences):
         sentence_en = sentence.strip().lower()
-        tokens = nltk.word_tokenize(sentence_en)
+        tokens = [normalizeString(s) for s in nltk.word_tokenize(sentence_en)]
         # Update word frequency
         word_freq.update(tokens)
 
@@ -112,12 +113,12 @@ def build_samples():
         samples = []
         for idx in tqdm(range(len(data_en))):
             sentence_en = data_en[idx].strip().lower()
-            tokens = nltk.word_tokenize(sentence_en)
+            tokens = [normalizeString(s) for s in nltk.word_tokenize(sentence_en)]
             input_en = encode_text(word_map_en, tokens)
 
             sentence_zh = data_zh[idx].strip()
-            seg_list = jieba.cut(sentence_zh)
-            output_zh = encode_text(word_map_zh, list(seg_list))
+            # seg_list = jieba.cut(sentence_zh)
+            output_zh = encode_text(word_map_zh, list(sentence_zh))
 
             if len(input_en) <= max_len and len(output_zh) <= max_len:
                 samples.append({'input': list(input_en), 'output': list(output_zh)})
