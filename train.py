@@ -53,10 +53,6 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         print('input_tensor.size(): ' + str(input_tensor.size()))
         print('target_tensor.size(): ' + str(target_tensor.size()))
 
-        # Back prop.
-        encoder_optimizer.zero_grad()
-        decoder_optimizer.zero_grad()
-
         input_length = max_len
         target_length = max_len
 
@@ -93,6 +89,10 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
                 loss += criterion(decoder_output, target_tensor[di])
                 if decoder_input.item() == EOS_token:
                     break
+
+        # Back prop.
+        encoder_optimizer.zero_grad()
+        decoder_optimizer.zero_grad()
 
         loss.backward()
         print_loss_total += loss.item()
