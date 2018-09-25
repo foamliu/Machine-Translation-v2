@@ -72,10 +72,9 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
                     decoder_input, decoder_hidden, encoder_outputs)
                 print(decoder_output.size())
                 print(target_tensor.size())
-                print(di)
-                print(target_tensor[di].size())
-                print(target_tensor[di])
-                loss += criterion(decoder_output, target_tensor[di])
+                print(target_tensor[:, di].size())
+                print(target_tensor[:, di])
+                loss += criterion(decoder_output, target_tensor[:, di])
                 decoder_input = target_tensor[di]  # Teacher forcing
 
         else:
@@ -85,13 +84,12 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
                     decoder_input, decoder_hidden, encoder_outputs)
                 print(decoder_output.size())
                 print(target_tensor.size())
-                print(di)
-                print(target_tensor[di].size())
-                print(target_tensor[di])
+                print(target_tensor[:, di].size())
+                print(target_tensor[:, di])
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.squeeze().detach()  # detach from history as input
 
-                loss += criterion(decoder_output, target_tensor[di])
+                loss += criterion(decoder_output, target_tensor[:, di])
                 if decoder_input.item() == EOS_token:
                     break
 
