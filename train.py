@@ -14,6 +14,29 @@ plt.switch_backend('agg')
 import matplotlib.ticker as ticker
 
 
+def asMinutes(s):
+    m = math.floor(s / 60)
+    s -= m * 60
+    return '%dm %ds' % (m, s)
+
+
+def timeSince(since, percent):
+    now = time.time()
+    s = now - since
+    es = s / (percent)
+    rs = es - s
+    return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
+
+
+def showPlot(points):
+    plt.figure()
+    fig, ax = plt.subplots()
+    # this locator puts ticks at regular intervals
+    loc = ticker.MultipleLocator(base=0.2)
+    ax.yaxis.set_major_locator(loc)
+    plt.plot(points)
+
+
 def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, max_length=max_len):
     encoder_hidden = encoder.initHidden()
     start = time.time()
@@ -80,32 +103,8 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
     return loss.item()
 
 
-def asMinutes(s):
-    m = math.floor(s / 60)
-    s -= m * 60
-    return '%dm %ds' % (m, s)
-
-
-def timeSince(since, percent):
-    now = time.time()
-    s = now - since
-    es = s / (percent)
-    rs = es - s
-    return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
-
-
-def showPlot(points):
-    plt.figure()
-    fig, ax = plt.subplots()
-    # this locator puts ticks at regular intervals
-    loc = ticker.MultipleLocator(base=0.2)
-    ax.yaxis.set_major_locator(loc)
-    plt.plot(points)
-
-
-def trainIters(train_loader, encoder, decoder, plot_every=1, learning_rate=0.01):
+def trainIters(train_loader, encoder, decoder, learning_rate=0.01):
     plot_losses = []
-    plot_loss_total = 0  # Reset every plot_every
 
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
@@ -114,12 +113,7 @@ def trainIters(train_loader, encoder, decoder, plot_every=1, learning_rate=0.01)
     # Epochs
     for epoch in range(start_epoch, epochs):
         loss = train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
-        plot_loss_total += loss
-
-        if epoch % plot_every == 0:
-            plot_loss_avg = plot_loss_total / plot_every
-            plot_losses.append(plot_loss_avg)
-            plot_loss_total = 0
+        plot_losses.append(loss)
 
     showPlot(plot_losses)
 
