@@ -48,10 +48,10 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         # Move to GPU, if available
         input_tensor = input_tensor.view(-1, 1).to(device)
         target_tensor = target_tensor.view(-1, 1).to(device)
-        print('input_tensor: ' + str(input_tensor))
-        print('target_tensor: ' + str(target_tensor))
-        print('input_tensor.size: ' + str(input_tensor.size))
-        print('target_tensor.size: ' + str(target_tensor.size))
+        # print('input_tensor: ' + str(input_tensor))
+        # print('target_tensor: ' + str(target_tensor))
+        print('input_tensor.size(): ' + str(input_tensor.size()))
+        print('target_tensor.size(): ' + str(target_tensor.size()))
 
         # Back prop.
         encoder_optimizer.zero_grad()
@@ -74,17 +74,11 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
 
         use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
 
-        print('decoder_input.size(): ' + str(decoder_input.size()))
-        print('decoder_hidden.size(): ' + str(decoder_hidden.size()))
-        print('encoder_outputs.size(): ' + str(encoder_outputs.size()))
-
         if use_teacher_forcing:
             # Teacher forcing: Feed the target as the next input
             for di in range(target_length):
                 decoder_output, decoder_hidden, decoder_attention = decoder(
                     decoder_input, decoder_hidden, encoder_outputs)
-                print('decoder_output.size(): ' + str(decoder_output.size()))
-                print('target_tensor[di].size(): ' + str(target_tensor[di].size()))
                 loss += criterion(decoder_output, target_tensor[di])
                 decoder_input = target_tensor[di]  # Teacher forcing
 
@@ -93,8 +87,6 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
             for di in range(target_length):
                 decoder_output, decoder_hidden, decoder_attention = decoder(
                     decoder_input, decoder_hidden, encoder_outputs)
-                print('decoder_output.size(): ' + str(decoder_output.size()))
-                print('target_tensor[di].size(): ' + str(target_tensor[di].size()))
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.squeeze().detach()  # detach from history as input
 
@@ -108,11 +100,11 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         encoder_optimizer.step()
         decoder_optimizer.step()
 
-        if i % print_every == 0:
+        if (i + 1) % print_every == 0:
             print_loss_avg = print_loss_total / print_every
             print_loss_total = 0
-            print('%s (%d %d%%) %.4f' % (timeSince(start, i / num_train_samples),
-                                         num_train_samples, i / num_train_samples * 100, print_loss_avg))
+            print('%s (%d %d%%) %.4f' % (timeSince(start, (i + 1) / num_train_samples),
+                                         num_train_samples, (i + 1) / num_train_samples * 100, print_loss_avg))
 
     return loss.item()
 
