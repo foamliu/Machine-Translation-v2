@@ -44,10 +44,15 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
     # Batches
     for i, (input_tensor, target_tensor) in enumerate(train_loader):
         start = time.time()
-        encoder_optimizer.zero_grad()
-        decoder_optimizer.zero_grad()
+
+        # Move to GPU, if available
         input_tensor = input_tensor.to(device)
         target_tensor = target_tensor.to(device)
+
+        # Back prop.
+        encoder_optimizer.zero_grad()
+        decoder_optimizer.zero_grad()
+
         input_length = max_len
         target_length = max_len
 
@@ -76,7 +81,6 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
                     decoder_input, decoder_hidden, encoder_outputs)
                 print('decoder_output.size(): ' + str(decoder_output.size()))
                 print('target_tensor[:, di].size(): ' + str(target_tensor[:, di].size()))
-                print('target_tensor[:, di].size(): ' + str(target_tensor[:, di].size()))
                 loss += criterion(decoder_output, target_tensor[:, di])
                 decoder_input = target_tensor[di]  # Teacher forcing
 
@@ -86,7 +90,6 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
                 decoder_output, decoder_hidden, decoder_attention = decoder(
                     decoder_input, decoder_hidden, encoder_outputs)
                 print('decoder_output.size(): ' + str(decoder_output.size()))
-                print('target_tensor[:, di].size(): ' + str(target_tensor[:, di].size()))
                 print('target_tensor[:, di].size(): ' + str(target_tensor[:, di].size()))
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.squeeze().detach()  # detach from history as input
