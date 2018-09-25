@@ -3,6 +3,7 @@ import random
 import time
 
 import matplotlib.pyplot as plt
+import numpy as np
 from torch import nn
 from torch import optim
 
@@ -54,7 +55,7 @@ def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, 
         # print('target_tensor.size(): ' + str(target_tensor.size()))
 
         input_length = max_len
-        target_length = target_tensor.item().index(EOS_token)
+        target_length = np.where(target_tensor.numpy() == EOS_token)
         print('target_length: ' + str(target_length))
 
         encoder_outputs = torch.zeros(max_len, encoder.hidden_size, device=device)
