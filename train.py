@@ -3,7 +3,6 @@ import random
 import time
 
 import matplotlib.pyplot as plt
-import numpy as np
 from torch import nn
 from torch import optim
 
@@ -38,60 +37,57 @@ def showPlot(points):
     plt.plot(points)
 
 
-def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion):
+def calc_loss(input_tensor, input_length, target_tensor, target_length, encoder, decoder, criterion):
+    encoder_outputs = torch.zeros(max_len, encoder.hidden_size, device=device)
     encoder_hidden = encoder.initHidden()
+
+    for ei in range(input_length):
+        encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
+        encoder_outputs[ei] = encoder_output[0, 0]
+
+    decoder_input = torch.tensor([[SOS_token]], device=device)
+
+    decoder_hidden = encoder_hidden
+
+    use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
+
+    loss = 0
+    if use_teacher_forcing:
+        # Teacher forcing: Feed the target as the next input
+        for di in range(target_length):
+            decoder_output, decoder_hidden, decoder_attention = decoder(
+                decoder_input, decoder_hidden, encoder_outputs)
+            loss += criterion(decoder_output, target_tensor[di])
+            decoder_input = target_tensor[di]  # Teacher forcing
+
+    else:
+        # Without teacher forcing: use its own predictions as the next input
+        for di in range(target_length):
+            decoder_output, decoder_hidden, decoder_attention = decoder(
+                decoder_input, decoder_hidden, encoder_outputs)
+            topv, topi = decoder_output.topk(1)
+            decoder_input = topi.squeeze().detach()  # detach from history as input
+
+            loss += criterion(decoder_output, target_tensor[di])
+            if decoder_input.item() == EOS_token:
+                break
+
+    return loss
+
+
+def train(train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion):
     print_loss_total = 0  # Reset every print_every
 
     # Batches
     for i, (input_array, target_array) in enumerate(train_loader):
         start = time.time()
-
         # Move to GPU, if available
         input_tensor = torch.tensor(input_array, device=device).view(-1, 1)
         target_tensor = torch.tensor(target_array, device=device).view(-1, 1)
-        # print('input_tensor: ' + str(input_tensor))
-        # print('target_tensor: ' + str(target_tensor))
-        # print('input_tensor.size(): ' + str(input_tensor.size()))
-        # print('target_tensor.size(): ' + str(target_tensor.size()))
-
         input_length = input_tensor.size(0)
         target_length = target_tensor.size(0)
-        # print('input_length: ' + str(input_length))
-        # print('target_length: ' + str(target_length))
 
-        encoder_outputs = torch.zeros(max_len, encoder.hidden_size, device=device)
-
-        loss = 0
-
-        for ei in range(input_length):
-            encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
-            encoder_outputs[ei] = encoder_output[0, 0]
-
-        decoder_input = torch.tensor([[SOS_token]], device=device)
-
-        decoder_hidden = encoder_hidden
-
-        use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
-
-        if use_teacher_forcing:
-            # Teacher forcing: Feed the target as the next input
-            for di in range(target_length):
-                decoder_output, decoder_hidden, decoder_attention = decoder(
-                    decoder_input, decoder_hidden, encoder_outputs)
-                loss += criterion(decoder_output, target_tensor[di])
-                decoder_input = target_tensor[di]  # Teacher forcing
-
-        else:
-            # Without teacher forcing: use its own predictions as the next input
-            for di in range(target_length):
-                decoder_output, decoder_hidden, decoder_attention = decoder(
-                    decoder_input, decoder_hidden, encoder_outputs)
-                topv, topi = decoder_output.topk(1)
-                decoder_input = topi.squeeze().detach()  # detach from history as input
-
-                loss += criterion(decoder_output, target_tensor[di])
-                if decoder_input.item() == EOS_token:
-                    break
+        loss = calc_loss(input_tensor, input_length, target_tensor, target_length, encoder, decoder, criterion)
 
         # Back prop.
         encoder_optimizer.zero_grad()
