@@ -202,11 +202,11 @@ def main():
     encoder = EncoderRNN(input_lang_n_words, hidden_size).to(device)
     decoder = AttnDecoderRNN(hidden_size, output_lang_n_words, dropout_p=dropout_p).to(device)
 
-    plot_losses = []
-
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
     criterion = nn.NLLLoss()
+
+    plot_losses = []
 
     # Epochs
     for epoch in range(start_epoch, epochs):
