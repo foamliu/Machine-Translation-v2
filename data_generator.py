@@ -12,10 +12,12 @@ class TranslationDataset(Dataset):
         print('loading {} samples'.format(split))
         if split == 'train':
             samples_path = 'data/samples_train.json'
+            self.samples = json.load(open(samples_path, 'r'))
+            self.samples = self.samples[:100000]
         else:
             samples_path = 'data/samples_valid.json'
+            self.samples = json.load(open(samples_path, 'r'))
 
-        self.samples = json.load(open(samples_path, 'r'))
         self.dataset_size = len(self.samples)
 
     def __getitem__(self, i):
