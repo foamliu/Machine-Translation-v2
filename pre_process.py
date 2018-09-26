@@ -124,7 +124,7 @@ def build_samples():
                 samples.append({'input': list(input_en), 'output': list(output_zh)})
 
         with open(filename, 'w') as f:
-            json.dump(samples, f)
+            json.dump(samples, f, indent=4)
         print('{} {} samples created at: {}.'.format(len(samples), usage, filename))
 
 
