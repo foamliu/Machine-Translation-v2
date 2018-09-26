@@ -85,9 +85,7 @@ def variable_from_sentence(lang, tokens):
     return var
 
 
-def evaluate(encoder, decoder, sentence):
-    tokens = nltk.word_tokenize(sentence)
-    input_variable = variable_from_sentence(input_lang, tokens)
+def evaluate(encoder, decoder, input_variable):
     input_length = input_variable.size()[0]
 
     # Run through encoder

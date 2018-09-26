@@ -167,7 +167,7 @@ def validate(val_loader, encoder, decoder, criterion):
         # Hypotheses
         sentence_en = ' '.join([input_lang.index2word[idx.item()] for idx in input_array])
         print('sentence_en: ' + str(sentence_en))
-        preds, _ = evaluate(encoder, decoder, sentence_en)
+        preds, _ = evaluate(encoder, decoder, input_array)
         hypotheses.append(preds)
 
         print('preds: ' + str(preds))
