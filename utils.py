@@ -87,7 +87,7 @@ def variable_from_sentence(lang, tokens):
 
 def evaluate(encoder, decoder, input_variable):
     # Run through encoder
-    encoder_hidden = encoder.initHidden()
+    encoder_hidden = encoder.init_hidden()
     encoder_outputs, encoder_hidden = encoder(input_variable, encoder_hidden)
 
     # Create starting vectors for decoder

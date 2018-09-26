@@ -38,17 +38,14 @@ def showPlot(points):
     plt.plot(points)
 
 
-def calc_loss(input_tensor, input_length, target_tensor, target_length, encoder, decoder, criterion):
-    encoder_outputs = torch.zeros(max_len, encoder.hidden_size, device=device)
-    encoder_hidden = encoder.initHidden()
-
-    for ei in range(input_length):
-        encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
-        encoder_outputs[ei] = encoder_output[0, 0]
+def calc_loss(input_tensor, target_tensor, target_length, encoder, decoder, criterion):
+    # Run words through encoder
+    encoder_hidden = encoder.init_hidden()
+    encoder_outputs, encoder_hidden = encoder(input_tensor, encoder_hidden)
 
     decoder_input = torch.tensor([[SOS_token]], device=device)
 
-    decoder_hidden = encoder_hidden
+    decoder_hidden = encoder_hidden  # Use last hidden state from encoder to start decoder
 
     use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
 
@@ -92,10 +89,9 @@ def train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_opti
         # Move to GPU, if available
         input_tensor = torch.tensor(input_array, device=device).view(-1, 1)
         target_tensor = torch.tensor(target_array, device=device).view(-1, 1)
-        input_length = input_tensor.size(0)
         target_length = target_tensor.size(0)
 
-        loss = calc_loss(input_tensor, input_length, target_tensor, target_length, encoder, decoder, criterion)
+        loss = calc_loss(input_tensor, target_tensor, target_length, encoder, decoder, criterion)
 
         # Back prop.
         encoder_optimizer.zero_grad()
@@ -141,10 +137,9 @@ def validate(val_loader, encoder, decoder, criterion):
         # Move to GPU, if available
         input_tensor = torch.tensor(input_array, device=device).view(-1, 1)
         target_tensor = torch.tensor(target_array, device=device).view(-1, 1)
-        input_length = input_tensor.size(0)
         target_length = target_tensor.size(0)
 
-        loss = calc_loss(input_tensor, input_length, target_tensor, target_length, encoder, decoder, criterion)
+        loss = calc_loss(input_tensor, target_tensor, target_length, encoder, decoder, criterion)
 
         # Keep track of metrics
         losses.update(loss.item(), target_length)
