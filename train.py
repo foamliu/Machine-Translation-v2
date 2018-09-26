@@ -162,11 +162,11 @@ def validate(val_loader, encoder, decoder, criterion):
         # references = [[ref1a, ref1b, ref1c], [ref2a, ref2b], ...], hypotheses = [hyp1, hyp2, ...]
 
         # References
-        reference = ''.join([output_lang.index2word(idx) for idx in target_array])
+        reference = ''.join([output_lang.index2word[idx] for idx in target_array])
         references.append([reference])
 
         # Hypotheses
-        sentence_en = ' '.join([input_lang.index2word(idx) for idx in input_array])
+        sentence_en = ' '.join([input_lang.index2word[idx] for idx in input_array])
         preds, _ = evaluate(encoder, decoder, sentence_en)
         hypotheses.append(preds)
 
