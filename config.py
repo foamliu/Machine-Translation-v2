@@ -1,3 +1,4 @@
+import json
 import os
 
 import torch
@@ -35,7 +36,20 @@ valid_translation_zh_filename = 'valid.zh'
 
 SOS_token = 0
 EOS_token = 1
+UNK_token = 2
 
 start_word = '<start>'
 stop_word = '<end>'
 unknown_word = '<unk>'
+
+
+class Lang:
+    def __init__(self, filename):
+        word_map = json.load(open(filename, 'r'))
+        self.word2index = word_map
+        self.index2word = {v: k for k, v in word_map.items()}
+        self.n_words = len(word_map)
+
+
+input_lang = Lang('data/WORDMAP_en.json')
+output_lang = Lang('data/WORDMAP_zh.json')

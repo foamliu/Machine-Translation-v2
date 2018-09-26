@@ -1,4 +1,3 @@
-import json
 import xml.etree.ElementTree
 from collections import Counter
 
@@ -120,7 +119,8 @@ def build_samples():
             # seg_list = jieba.cut(sentence_zh)
             output_zh = encode_text(word_map_zh, list(sentence_zh))
 
-            if len(input_en) <= max_len and len(output_zh) <= max_len:
+            if len(input_en) <= max_len and len(
+                    output_zh) <= max_len and UNK_token not in input_en and UNK_token not in output_zh:
                 samples.append({'input': list(input_en), 'output': list(output_zh)})
 
         with open(filename, 'w') as f:

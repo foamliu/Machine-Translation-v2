@@ -1,15 +1,11 @@
 import multiprocessing
-import os
 import re
 import unicodedata
 
-from tensorflow.python.client import device_lib
+import nltk
+from torch.autograd import Variable
 
-
-# getting the number of GPUs
-def get_available_gpus():
-    local_device_protos = device_lib.list_local_devices()
-    return [x.name for x in local_device_protos if x.device_type == 'GPU']
+from config import *
 
 
 # getting the number of CPUs
@@ -75,3 +71,54 @@ def normalizeString(s):
     s = re.sub(r"([.!?])", r" \1", s)
     s = re.sub(r"[^a-zA-Z.!?]+", r" ", s)
     return s
+
+
+# Return a list of indexes, one for each word in the sentence
+def indexes_from_tokens(lang, tokens):
+    return [lang.word2index[word] for word in tokens]
+
+
+def variable_from_sentence(lang, tokens):
+    indexes = indexes_from_tokens(lang, tokens)
+    indexes.append(EOS_token)
+    var = Variable(torch.LongTensor(indexes).view(-1, 1))
+    return var
+
+
+def evaluate(encoder, decoder, sentence):
+    tokens = nltk.word_tokenize(sentence)
+    input_variable = variable_from_sentence(input_lang, tokens)
+    input_length = input_variable.size()[0]
+
+    # Run through encoder
+    encoder_hidden = encoder.init_hidden()
+    encoder_outputs, encoder_hidden = encoder(input_variable, encoder_hidden)
+
+    # Create starting vectors for decoder
+    decoder_input = Variable(torch.LongTensor([[SOS_token]]))  # SOS
+    decoder_context = Variable(torch.zeros(1, decoder.hidden_size))
+
+    decoder_hidden = encoder_hidden
+
+    decoded_words = []
+    decoder_attentions = torch.zeros(max_len, max_len)
+
+    # Run through decoder
+    for di in range(max_len):
+        decoder_output, decoder_context, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_context,
+                                                                                     decoder_hidden, encoder_outputs)
+        decoder_attentions[di, :decoder_attention.size(2)] += decoder_attention.squeeze(0).squeeze(0).cpu().data
+
+        # Choose top word from output
+        topv, topi = decoder_output.data.topk(1)
+        ni = topi[0][0]
+        if ni == EOS_token:
+            decoded_words.append('<end>')
+            break
+        else:
+            decoded_words.append(output_lang.index2word[ni])
+
+        # Next input is chosen word
+        decoder_input = Variable(torch.LongTensor([[ni]]))
+
+    return decoded_words, decoder_attentions[:di + 1, :len(encoder_outputs)]
