@@ -86,8 +86,6 @@ def variable_from_sentence(lang, tokens):
 
 
 def evaluate(encoder, decoder, input_variable):
-    input_length = input_variable.size()[0]
-
     # Run through encoder
     encoder_hidden = encoder.init_hidden()
     encoder_outputs, encoder_hidden = encoder(input_variable, encoder_hidden)
