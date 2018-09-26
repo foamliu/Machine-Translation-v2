@@ -147,7 +147,7 @@ def validate(val_loader, encoder, decoder, criterion):
         loss = calc_loss(input_tensor, input_length, target_tensor, target_length, encoder, decoder, criterion)
 
         # Keep track of metrics
-        losses.update(loss.item(), sum(target_length))
+        losses.update(loss.item(), target_length)
         batch_time.update(time.time() - start)
 
         start = time.time()
@@ -210,9 +210,9 @@ def main():
 
     # Epochs
     for epoch in range(start_epoch, epochs):
-        # One epoch's training
-        loss = train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
-        plot_losses.append(loss)
+        # # One epoch's training
+        # loss = train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
+        # plot_losses.append(loss)
 
         # One epoch's validation
         validate(val_loader=val_loader,
