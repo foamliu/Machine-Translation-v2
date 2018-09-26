@@ -94,7 +94,7 @@ def evaluate(encoder, decoder, input_tensor, input_length):
         encoder_outputs[ei] = encoder_output[0, 0]
 
     # Create starting vectors for decoder
-    decoder_input = Variable(torch.LongTensor([[SOS_token]], device=device))  # SOS
+    decoder_input = torch.LongTensor([[SOS_token]], device=device)  # SOS
 
     decoder_hidden = encoder_hidden
 
@@ -105,14 +105,12 @@ def evaluate(encoder, decoder, input_tensor, input_length):
     for di in range(max_len):
         decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs)
         topv, topi = decoder_output.topk(1)
-        ni = topi[0][0]
-        if ni == EOS_token:
+        decoder_input = topi.squeeze().detach()
+
+        if decoder_input.item() == EOS_token:
             decoded_words.append('<end>')
             break
         else:
-            decoded_words.append(output_lang.index2word[ni])
-
-        # Next input is chosen word
-        decoder_input = Variable(torch.LongTensor([[ni]]))
+            decoded_words.append(output_lang.index2word[decoder_input.item()])
 
     return decoded_words, decoder_attentions[:di + 1, :len(encoder_outputs)]
