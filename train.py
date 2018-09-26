@@ -152,27 +152,28 @@ def validate(val_loader, encoder, decoder, criterion):
 
         start = time.time()
 
-        if i % print_every == 0:
-            print('Validation: [{0}/{1}]\t'
-                  'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(i, len(val_loader), batch_time=batch_time,
-                                                                  loss=losses))
+        print('Validation: [{0}/{1}]\t'
+              'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+              'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(i, len(val_loader), batch_time=batch_time,
+                                                              loss=losses))
 
         # Store references (true captions), and hypothesis (prediction) for each pair
         # references = [[ref1a, ref1b, ref1c], [ref2a, ref2b], ...], hypotheses = [hyp1, hyp2, ...]
 
         # References
-        reference = ''.join([output_lang.index2word[idx] for idx in target_array])
+        print(target_array)
+        reference = [output_lang.index2word[idx] for idx in target_array]
         references.append([reference])
 
+        print(input_array)
         # Hypotheses
         sentence_en = ' '.join([input_lang.index2word[idx] for idx in input_array])
+        print('sentence_en: ' + str(sentence_en))
         preds, _ = evaluate(encoder, decoder, sentence_en)
         hypotheses.append(preds)
 
-        print('sentence_en: ' + str(sentence_en))
+        print('preds: ' + str(preds))
         print('reference: ' + str(reference))
-        print('sentence_en: ' + str(preds))
 
         assert len(references) == len(hypotheses)
 
