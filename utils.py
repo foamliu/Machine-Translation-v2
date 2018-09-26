@@ -94,7 +94,7 @@ def evaluate(encoder, decoder, input_tensor, input_length):
         encoder_outputs[ei] = encoder_output[0, 0]
 
     # Create starting vectors for decoder
-    decoder_input = torch.LongTensor([[SOS_token]], device=device)  # SOS
+    decoder_input = torch.tensor([[SOS_token]], device=device)  # SOS
 
     decoder_hidden = encoder_hidden
 
