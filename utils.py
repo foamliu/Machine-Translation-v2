@@ -85,32 +85,34 @@ def variable_from_sentence(lang, tokens):
 
 
 def evaluate(encoder, decoder, input_tensor, input_length):
-    # Run through encoder
-    encoder_outputs = torch.zeros(max_len, encoder.hidden_size, device=device)
-    encoder_hidden = encoder.init_hidden()
+    with torch.no_grad():
+        # Run through encoder
+        encoder_hidden = encoder.init_hidden()
+        encoder_outputs = torch.zeros(max_len, encoder.hidden_size, device=device)
 
-    for ei in range(input_length):
-        encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
-        encoder_outputs[ei] = encoder_output[0, 0]
+        for ei in range(input_length):
+            encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
+            encoder_outputs[ei] += encoder_output[0, 0]
 
-    # Create starting vectors for decoder
-    decoder_input = torch.tensor([[SOS_token]], device=device)  # SOS
+        # Create starting vectors for decoder
+        decoder_input = torch.tensor([[SOS_token]], device=device)  # SOS
 
-    decoder_hidden = encoder_hidden
+        decoder_hidden = encoder_hidden
 
-    decoded_words = []
-    decoder_attentions = torch.zeros(max_len, max_len, device=device)
+        decoded_words = []
+        decoder_attentions = torch.zeros(max_len, max_len)
 
-    # Run through decoder
-    for di in range(max_len):
-        decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs)
-        topv, topi = decoder_output.topk(1)
-        decoder_input = topi.squeeze().detach()
+        for di in range(max_len):
+            decoder_output, decoder_hidden, decoder_attention = decoder(
+                decoder_input, decoder_hidden, encoder_outputs)
+            decoder_attentions[di] = decoder_attention.data
+            topv, topi = decoder_output.data.topk(1)
+            if topi.item() == EOS_token:
+                decoded_words.append('<EOS>')
+                break
+            else:
+                decoded_words.append(output_lang.index2word[topi.item()])
 
-        if decoder_input.item() == EOS_token:
-            decoded_words.append('<end>')
-            break
-        else:
-            decoded_words.append(output_lang.index2word[decoder_input.item()])
+            decoder_input = topi.squeeze().detach()
 
-    return decoded_words, decoder_attentions[:di + 1, :len(encoder_outputs)]
+        return decoded_words, decoder_attentions[:di + 1]
