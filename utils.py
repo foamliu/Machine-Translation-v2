@@ -94,12 +94,12 @@ def evaluate(encoder, decoder, input_tensor, input_length):
         encoder_outputs[ei] = encoder_output[0, 0]
 
     # Create starting vectors for decoder
-    decoder_input = Variable(torch.LongTensor([[SOS_token]]))  # SOS
+    decoder_input = Variable(torch.LongTensor([[SOS_token]], device=device))  # SOS
 
     decoder_hidden = encoder_hidden
 
     decoded_words = []
-    decoder_attentions = torch.zeros(max_len, max_len)
+    decoder_attentions = torch.zeros(max_len, max_len, device=device)
 
     # Run through decoder
     for di in range(max_len):
