@@ -210,9 +210,9 @@ def main():
 
     # Epochs
     for epoch in range(start_epoch, epochs):
-        # # One epoch's training
-        # loss = train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
-        # plot_losses.append(loss)
+        # One epoch's training
+        loss = train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
+        plot_losses.append(loss)
 
         # One epoch's validation
         validate(val_loader=val_loader,
