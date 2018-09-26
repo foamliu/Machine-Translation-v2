@@ -19,8 +19,8 @@ input_lang_n_words = 63726
 output_lang_n_words = 5442
 start_epoch = 0
 epochs = 120
-num_train_samples = 8727303
-num_valid_samples = 7392
+num_train_samples = 1866131
+num_valid_samples = 10
 print_every = 100
 
 train_folder = 'data/ai_challenger_translation_train_20170912'

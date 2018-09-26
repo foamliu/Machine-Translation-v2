@@ -1,16 +1,15 @@
-import json
 import math
 import random
 import time
 
 import matplotlib.pyplot as plt
+from nltk.translate.bleu_score import corpus_bleu
 from torch import nn
 from torch import optim
 
-from config import *
 from data_generator import TranslationDataset
 from models import EncoderRNN, AttnDecoderRNN
-from utils import AverageMeter
+from utils import *
 
 plt.switch_backend('agg')
 import matplotlib.ticker as ticker
@@ -78,6 +77,9 @@ def calc_loss(input_tensor, input_length, target_tensor, target_length, encoder,
 
 
 def train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion):
+    decoder.train()  # train mode (dropout and batchnorm is used)
+    encoder.train()
+
     print_loss_total = 0  # Reset every print_every
 
     batch_time = AverageMeter()  # forward prop. + back prop. time
@@ -122,6 +124,69 @@ def train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_opti
     return loss.item()
 
 
+def validate(val_loader, encoder, decoder, criterion):
+    encoder.eval()  # eval mode (no dropout or batchnorm)
+    decoder.eval()
+
+    batch_time = AverageMeter()
+    losses = AverageMeter()
+
+    start = time.time()
+
+    references = list()  # references (true captions) for calculating BLEU-4 score
+    hypotheses = list()  # hypotheses (predictions)
+
+    # Batches
+    for i, (input_array, target_array) in enumerate(val_loader):
+        # Move to GPU, if available
+        input_tensor = torch.tensor(input_array, device=device).view(-1, 1)
+        target_tensor = torch.tensor(target_array, device=device).view(-1, 1)
+        input_length = input_tensor.size(0)
+        target_length = target_tensor.size(0)
+
+        loss = calc_loss(input_tensor, input_length, target_tensor, target_length, encoder, decoder, criterion)
+
+        # Keep track of metrics
+        losses.update(loss.item(), sum(target_length))
+        batch_time.update(time.time() - start)
+
+        start = time.time()
+
+        if i % print_every == 0:
+            print('Validation: [{0}/{1}]\t'
+                  'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(i, len(val_loader), batch_time=batch_time,
+                                                                  loss=losses))
+
+        # Store references (true captions), and hypothesis (prediction) for each pair
+        # references = [[ref1a, ref1b, ref1c], [ref2a, ref2b], ...], hypotheses = [hyp1, hyp2, ...]
+
+        # References
+        reference = ''.join([output_lang.index2word(idx) for idx in target_array])
+        references.append([reference])
+
+        # Hypotheses
+        sentence_en = ' '.join([input_lang.index2word(idx) for idx in input_array])
+        preds, _ = evaluate(encoder, decoder, sentence_en)
+        hypotheses.append(preds)
+
+        print('sentence_en: ' + str(sentence_en))
+        print('reference: ' + str(reference))
+        print('sentence_en: ' + str(preds))
+
+        assert len(references) == len(hypotheses)
+
+    # Calculate BLEU-4 scores
+    bleu4 = corpus_bleu(references, hypotheses, emulate_multibleu=True)
+
+    print(
+        '\n * LOSS - {loss.avg:.3f}, BLEU-4 - {bleu}\n'.format(
+            loss=losses,
+            bleu=bleu4))
+
+    return bleu4
+
+
 def main():
     word_map_zh = json.load(open('data/WORDMAP_zh.json', 'r'))
     word_map_en = json.load(open('data/WORDMAP_en.json', 'r'))
@@ -138,8 +203,6 @@ def main():
     decoder = AttnDecoderRNN(hidden_size, output_lang_n_words, dropout_p=dropout_p).to(device)
 
     plot_losses = []
-    decoder.train()  # train mode (dropout and batchnorm is used)
-    encoder.train()
 
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
@@ -147,8 +210,15 @@ def main():
 
     # Epochs
     for epoch in range(start_epoch, epochs):
+        # One epoch's training
         loss = train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
         plot_losses.append(loss)
+
+        # One epoch's validation
+        validate(val_loader=val_loader,
+                 encoder=encoder,
+                 decoder=decoder,
+                 criterion=criterion)
 
     showPlot(plot_losses)
 
