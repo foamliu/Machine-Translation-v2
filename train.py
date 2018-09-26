@@ -176,7 +176,7 @@ def validate(val_loader, encoder, decoder, criterion):
         assert len(references) == len(hypotheses)
 
     # Calculate BLEU-4 scores
-    bleu4 = corpus_bleu(references, hypotheses, emulate_multibleu=True)
+    bleu4 = corpus_bleu(references, hypotheses)
 
     print(
         '\n * LOSS - {loss.avg:.3f}, BLEU-4 - {bleu}\n'.format(
