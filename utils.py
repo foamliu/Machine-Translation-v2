@@ -2,7 +2,6 @@ import multiprocessing
 import re
 import unicodedata
 
-import nltk
 from torch.autograd import Variable
 
 from config import *
@@ -85,10 +84,14 @@ def variable_from_sentence(lang, tokens):
     return var
 
 
-def evaluate(encoder, decoder, input_variable):
+def evaluate(encoder, decoder, input_tensor, input_length):
     # Run through encoder
+    encoder_outputs = torch.zeros(max_len, encoder.hidden_size, device=device)
     encoder_hidden = encoder.init_hidden()
-    encoder_outputs, encoder_hidden = encoder(input_variable, encoder_hidden)
+
+    for ei in range(input_length):
+        encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
+        encoder_outputs[ei] = encoder_output[0, 0]
 
     # Create starting vectors for decoder
     decoder_input = Variable(torch.LongTensor([[SOS_token]]))  # SOS
