@@ -95,7 +95,6 @@ def evaluate(encoder, decoder, input_tensor, input_length):
 
     # Create starting vectors for decoder
     decoder_input = Variable(torch.LongTensor([[SOS_token]]))  # SOS
-    decoder_context = Variable(torch.zeros(1, decoder.hidden_size))
 
     decoder_hidden = encoder_hidden
 
