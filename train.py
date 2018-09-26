@@ -122,7 +122,21 @@ def train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_opti
     return loss.item()
 
 
-def trainIters(train_loader, encoder, decoder, learning_rate=0.01):
+def main():
+    word_map_zh = json.load(open('data/WORDMAP_zh.json', 'r'))
+    word_map_en = json.load(open('data/WORDMAP_en.json', 'r'))
+
+    input_lang_n_words = len(word_map_en)
+    output_lang_n_words = len(word_map_zh)
+
+    train_loader = torch.utils.data.DataLoader(
+        TranslationDataset('train'), batch_size=batch_size, shuffle=True, num_workers=workers, pin_memory=True)
+    val_loader = torch.utils.data.DataLoader(
+        TranslationDataset('valid'), batch_size=batch_size, shuffle=True, num_workers=workers, pin_memory=True)
+
+    encoder = EncoderRNN(input_lang_n_words, hidden_size).to(device)
+    decoder = AttnDecoderRNN(hidden_size, output_lang_n_words, dropout_p=dropout_p).to(device)
+
     plot_losses = []
     decoder.train()  # train mode (dropout and batchnorm is used)
     encoder.train()
@@ -140,18 +154,4 @@ def trainIters(train_loader, encoder, decoder, learning_rate=0.01):
 
 
 if __name__ == '__main__':
-    word_map_zh = json.load(open('data/WORDMAP_zh.json', 'r'))
-    word_map_en = json.load(open('data/WORDMAP_en.json', 'r'))
-
-    input_lang_n_words = len(word_map_en)
-    output_lang_n_words = len(word_map_zh)
-
-    train_loader = torch.utils.data.DataLoader(
-        TranslationDataset('train'), batch_size=batch_size, shuffle=True, num_workers=workers, pin_memory=True)
-    val_loader = torch.utils.data.DataLoader(
-        TranslationDataset('valid'), batch_size=batch_size, shuffle=True, num_workers=workers, pin_memory=True)
-
-    encoder = EncoderRNN(input_lang_n_words, hidden_size).to(device)
-    attn_decoder = AttnDecoderRNN(hidden_size, output_lang_n_words, dropout_p=0.1).to(device)
-
-    trainIters(train_loader, encoder, attn_decoder)
+    main()
