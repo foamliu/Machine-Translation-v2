@@ -5,7 +5,7 @@ import torch
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-batch_size = 1
+batch_size = 64
 workers = 1
 patience = 50
 max_len = 10
@@ -15,8 +15,8 @@ hidden_size = 512
 n_layers = 2
 dropout_p = 0.05
 min_word_freq = 20
-input_lang_n_words = 63726
-output_lang_n_words = 5442
+# input_lang_n_words = 63726
+# output_lang_n_words = 5442
 start_epoch = 0
 epochs = 120
 num_train_samples = 1866131
@@ -34,9 +34,10 @@ train_translation_zh_filename = 'train.zh'
 valid_translation_en_filename = 'valid.en'
 valid_translation_zh_filename = 'valid.zh'
 
-SOS_token = 0
-EOS_token = 1
-UNK_token = 2
+# Default word tokens
+PAD_token = 0  # Used for padding short sentences
+SOS_token = 1  # Start-of-sentence token
+EOS_token = 2  # End-of-sentence token
 
 start_word = '<start>'
 stop_word = '<end>'

@@ -7,7 +7,7 @@ from nltk.translate.bleu_score import corpus_bleu
 from torch import nn
 from torch import optim
 
-from data_generator import TranslationDataset
+from data_gen import TranslationDataset
 from models import EncoderRNN, AttnDecoderRNN
 from utils import *
 
@@ -38,47 +38,55 @@ def showPlot(points):
     plt.plot(points)
 
 
-def calc_loss(input_tensor, input_length, target_tensor, target_length, encoder, decoder, criterion):
-    encoder_outputs = torch.zeros(max_len, encoder.hidden_size, device=device)
-    encoder_hidden = encoder.init_hidden()
+def calc_loss(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder):
+    # Initialize variables
+    loss = 0
 
-    for ei in range(input_length):
-        encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
-        encoder_outputs[ei] = encoder_output[0, 0]
+    # Forward pass through encoder
+    encoder_outputs, encoder_hidden = encoder(input_variable, lengths)
 
-    decoder_input = torch.tensor([[SOS_token]], device=device)
+    # Create initial decoder input (start with SOS tokens for each sentence)
+    decoder_input = torch.LongTensor([[SOS_token for _ in range(batch_size)]])
+    decoder_input = decoder_input.to(device)
 
-    decoder_hidden = encoder_hidden
+    # Set initial decoder hidden state to the encoder's final hidden state
+    decoder_hidden = encoder_hidden[:decoder.n_layers]
 
+    # Determine if we are using teacher forcing this iteration
     use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
 
-    loss = 0
+    # Forward batch of sequences through decoder one time step at a time
     if use_teacher_forcing:
-        # Teacher forcing: Feed the target as the next input
-        for di in range(target_length):
-            decoder_output, decoder_hidden, decoder_attention = decoder(
-                decoder_input, decoder_hidden, encoder_outputs)
-            loss += criterion(decoder_output, target_tensor[di])
-            decoder_input = target_tensor[di]  # Teacher forcing
+        for t in range(max_target_len):
+            decoder_output, decoder_hidden = decoder(
+                decoder_input, decoder_hidden, encoder_outputs
+            )
+            # Teacher forcing: next input is current target
+            decoder_input = target_variable[t].view(1, -1)
+            # Calculate and accumulate loss
+            mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
+            loss += mask_loss
 
     else:
-        # Without teacher forcing: use its own predictions as the next input
-        for di in range(target_length):
-            decoder_output, decoder_hidden, decoder_attention = decoder(
-                decoder_input, decoder_hidden, encoder_outputs)
-            topv, topi = decoder_output.topk(1)
-            decoder_input = topi.squeeze().detach()  # detach from history as input
+        for t in range(max_target_len):
+            decoder_output, decoder_hidden = decoder(
+                decoder_input, decoder_hidden, encoder_outputs
+            )
+            # No teacher forcing: next input is decoder's own current output
+            _, topi = decoder_output.topk(1)
+            decoder_input = torch.LongTensor([[topi[i][0] for i in range(batch_size)]])
+            decoder_input = decoder_input.to(device)
+            # Calculate and accumulate loss
+            mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
+            loss += mask_loss
 
-            loss += criterion(decoder_output, target_tensor[di])
-            if decoder_input.item() == EOS_token:
-                break
-
-    return loss / target_length
+    return loss, mask_loss, nTotal
 
 
 def train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion):
-    decoder.train()  # train mode (dropout and batchnorm is used)
+    # Ensure dropout layers are in train mode
     encoder.train()
+    decoder.train()
 
     print_loss_total = 0  # Reset every print_every
 
@@ -88,7 +96,9 @@ def train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_opti
     start = time.time()
 
     # Batches
-    for i, (input_array, target_array) in enumerate(train_loader):
+    for i in range(train_loader.__len__()):
+        input_variable, lengths, target_variable, mask, max_target_len = train_loader.__getitem__(i)
+
         # Move to GPU, if available
         input_tensor = torch.tensor(input_array, device=device).view(-1, 1)
         target_tensor = torch.tensor(target_array, device=device).view(-1, 1)
@@ -193,10 +203,8 @@ def main():
     input_lang_n_words = len(word_map_en)
     output_lang_n_words = len(word_map_zh)
 
-    train_loader = torch.utils.data.DataLoader(
-        TranslationDataset('train'), batch_size=batch_size, shuffle=True, num_workers=workers, pin_memory=True)
-    val_loader = torch.utils.data.DataLoader(
-        TranslationDataset('valid'), batch_size=batch_size, shuffle=True, num_workers=workers, pin_memory=True)
+    train_loader = TranslationDataset('train')
+    val_loader = TranslationDataset('valid')
 
     encoder = EncoderRNN(input_lang_n_words, hidden_size).to(device)
     decoder = AttnDecoderRNN(hidden_size, output_lang_n_words, dropout_p=dropout_p).to(device)
