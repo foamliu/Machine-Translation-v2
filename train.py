@@ -81,7 +81,7 @@ def calc_loss(input_variable, lengths, target_variable, mask, max_target_len, en
     return loss, mask_loss, nTotal
 
 
-def train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion):
+def train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer):
     # Ensure dropout layers are in train mode
     encoder.train()
     decoder.train()
@@ -187,7 +187,7 @@ def main():
     # Epochs
     for epoch in range(start_epoch, epochs):
         # One epoch's training
-        loss = train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
+        loss = train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer)
         plot_losses.append(loss)
 
         # One epoch's validation
