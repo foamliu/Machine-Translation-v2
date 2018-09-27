@@ -93,6 +93,7 @@ def variable_from_sentence(lang, tokens):
     return var
 
 
+<<<<<<< HEAD
 class GreedySearchDecoder(nn.Module):
     def __init__(self, encoder, decoder):
         super(GreedySearchDecoder, self).__init__()
@@ -175,3 +176,37 @@ def evaluateInput(encoder, decoder, searcher, voc):
 
         except KeyError:
             print("Error: Encountered unknown word.")
+=======
+def evaluate(encoder, decoder, input_tensor, input_length):
+    with torch.no_grad():
+        # Run through encoder
+        encoder_hidden = encoder.init_hidden()
+        encoder_outputs = torch.zeros(max_len, encoder.hidden_size, device=device)
+
+        for ei in range(input_length):
+            encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
+            encoder_outputs[ei] += encoder_output[0, 0]
+
+        # Create starting vectors for decoder
+        decoder_input = torch.tensor([[SOS_token]], device=device)  # SOS
+
+        decoder_hidden = encoder_hidden
+
+        decoded_words = []
+        decoder_attentions = torch.zeros(max_len, max_len)
+
+        for di in range(max_len):
+            decoder_output, decoder_hidden, decoder_attention = decoder(
+                decoder_input, decoder_hidden, encoder_outputs)
+            decoder_attentions[di] = decoder_attention.data
+            topv, topi = decoder_output.data.topk(1)
+            if topi.item() == EOS_token:
+                decoded_words.append('<EOS>')
+                break
+            else:
+                decoded_words.append(output_lang.index2word[topi.item()])
+
+            decoder_input = topi.squeeze().detach()
+
+        return decoded_words, decoder_attentions[:di + 1]
+>>>>>>> 4e8ba8652d76d51c23b63bfd9e459a2ccb06c5ff

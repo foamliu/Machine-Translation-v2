@@ -5,23 +5,28 @@ import torch
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-batch_size = 64
-workers = 1
-patience = 50
-max_len = 10
-learning_rate = 0.0001
+# Configure training/optimization
+clip = 50.0
 teacher_forcing_ratio = 1.0
-hidden_size = 512
-n_layers = 2
-dropout_p = 0.05
-min_word_freq = 20
-# input_lang_n_words = 63726
-# output_lang_n_words = 5442
+learning_rate = 0.0001
+decoder_learning_ratio = 5.0
+n_iteration = 4000
+print_every = 100
+save_every = 500
+workers = 1
+max_len = 10  # Maximum sentence length to consider
+min_word_freq = 3  # Minimum word count threshold for trimming
+
+# Configure models
+model_name = 'cb_model'
+attn_model = 'dot'
 start_epoch = 0
 epochs = 120
-num_train_samples = 1866131
-num_valid_samples = 10
-print_every = 100
+hidden_size = 500
+encoder_n_layers = 2
+decoder_n_layers = 2
+dropout = 0.1
+batch_size = 64
 
 train_folder = 'data/ai_challenger_translation_train_20170912'
 valid_folder = 'data/ai_challenger_translation_validation_20170912'
