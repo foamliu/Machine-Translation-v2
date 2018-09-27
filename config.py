@@ -43,6 +43,7 @@ valid_translation_zh_filename = 'valid.zh'
 PAD_token = 0  # Used for padding short sentences
 SOS_token = 1  # Start-of-sentence token
 EOS_token = 2  # End-of-sentence token
+UNK_token = 3
 
 start_word = '<start>'
 stop_word = '<end>'
