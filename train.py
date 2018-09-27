@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from torch import optim
 
 from data_gen import TranslationDataset
-from models import EncoderRNN, AttnDecoderRNN
+from models import EncoderRNN, LuongAttnDecoderRNN
 from utils import *
 
 plt.switch_backend('agg')
@@ -169,7 +169,7 @@ def main():
 
     # Initialize encoder & decoder models
     encoder = EncoderRNN(input_lang.n_words, hidden_size, encoder_n_layers, dropout)
-    decoder = AttnDecoderRNN(attn_model, hidden_size, output_lang.n_words, decoder_n_layers, dropout)
+    decoder = LuongAttnDecoderRNN(attn_model, hidden_size, output_lang.n_words, decoder_n_layers, dropout)
 
     # Use appropriate device
     encoder = encoder.to(device)
