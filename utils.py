@@ -93,7 +93,6 @@ def variable_from_sentence(lang, tokens):
     return var
 
 
-<<<<<<< HEAD
 class GreedySearchDecoder(nn.Module):
     def __init__(self, encoder, decoder):
         super(GreedySearchDecoder, self).__init__()
@@ -176,7 +175,8 @@ def evaluateInput(encoder, decoder, searcher, voc):
 
         except KeyError:
             print("Error: Encountered unknown word.")
-=======
+
+
 def evaluate(encoder, decoder, input_tensor, input_length):
     with torch.no_grad():
         # Run through encoder
@@ -209,4 +209,3 @@ def evaluate(encoder, decoder, input_tensor, input_length):
             decoder_input = topi.squeeze().detach()
 
         return decoded_words, decoder_attentions[:di + 1]
->>>>>>> 4e8ba8652d76d51c23b63bfd9e459a2ccb06c5ff
