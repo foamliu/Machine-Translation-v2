@@ -150,7 +150,7 @@ def main():
             if i % print_every == 0:
                 print('[{0}] Epoch: [{1}][{2}/{3}]\t'
                       'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(timestamp(), epoch, i, len(train_data),
+                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(timestamp(), epoch, i, len(train_loader),
                                                                       batch_time=batch_time,
                                                                       loss=losses))
 
@@ -176,8 +176,6 @@ def main():
                 'input_lang_dict': input_lang.__dict__,
                 'output_lang_dict': output_lang.__dict__,
             }, os.path.join(directory, '{}_{}.tar'.format(epoch, 'checkpoint')))
-
-        train_data.shuffle()
 
 
 if __name__ == '__main__':
