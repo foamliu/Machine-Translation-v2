@@ -1,4 +1,3 @@
-import random
 import time
 
 from torch import optim
@@ -80,10 +79,10 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
     return sum(print_losses) / n_totals
 
 
-def evaluate(searcher, voc, sentence, max_length=max_len):
+def evaluate(searcher, sentence, max_length=max_len):
     ### Format input sentence as a batch
     # words -> indexes
-    indexes_batch = [indexesFromSentence(voc, sentence)]
+    indexes_batch = [indexesFromSentence(input_lang, sentence)]
     # Create lengths tensor
     lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
     # Transpose dimensions of batch to match models' expectations
@@ -94,7 +93,7 @@ def evaluate(searcher, voc, sentence, max_length=max_len):
     # Decode sentence with searcher
     tokens, scores = searcher(input_batch, lengths, max_length)
     # indexes -> words
-    decoded_words = [voc.index2word[token.item()] for token in tokens]
+    decoded_words = [output_lang.index2word[token.item()] for token in tokens]
     return decoded_words
 
 
@@ -147,6 +146,13 @@ def main():
                       'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(epoch, i, len(train_loader),
                                                                       batch_time=batch_time,
                                                                       loss=losses))
+
+        # Initialize search module
+        searcher = GreedySearchDecoder(encoder, decoder)
+        for sentence in pick_n_valid_sentences(10):
+            decoded_words = evaluate(searcher, sentence)
+            print(sentence)
+            print(decoded_words)
 
         # Save checkpoint
         if epoch % save_every == 0:
