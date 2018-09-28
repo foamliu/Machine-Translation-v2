@@ -1,44 +1,29 @@
-import math
 import random
 import time
 
-import matplotlib.pyplot as plt
 from torch import optim
 
 from data_gen import TranslationDataset
 from models import EncoderRNN, LuongAttnDecoderRNN
 from utils import *
 
-plt.switch_backend('agg')
-import matplotlib.ticker as ticker
 
+def train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder, encoder_optimizer,
+          decoder_optimizer):
+    # Zero gradients
+    encoder_optimizer.zero_grad()
+    decoder_optimizer.zero_grad()
 
-def asMinutes(s):
-    m = math.floor(s / 60)
-    s -= m * 60
-    return '%dm %ds' % (m, s)
+    # Set device options
+    input_variable = input_variable.to(device)
+    lengths = lengths.to(device)
+    target_variable = target_variable.to(device)
+    mask = mask.to(device)
 
-
-def timeSince(since, percent):
-    now = time.time()
-    s = now - since
-    es = s / (percent)
-    rs = es - s
-    return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
-
-
-def showPlot(points):
-    plt.figure()
-    fig, ax = plt.subplots()
-    # this locator puts ticks at regular intervals
-    loc = ticker.MultipleLocator(base=0.2)
-    ax.yaxis.set_major_locator(loc)
-    plt.plot(points)
-
-
-def calc_loss(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder):
     # Initialize variables
     loss = 0
+    print_losses = []
+    n_totals = 0
 
     # Forward pass through encoder
     encoder_outputs, encoder_hidden = encoder(input_variable, lengths)
@@ -64,7 +49,8 @@ def calc_loss(input_variable, lengths, target_variable, mask, max_target_len, en
             # Calculate and accumulate loss
             mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
             loss += mask_loss
-
+            print_losses.append(mask_loss.item() * nTotal)
+            n_totals += nTotal
     else:
         for t in range(max_target_len):
             decoder_output, decoder_hidden = decoder(
@@ -77,105 +63,19 @@ def calc_loss(input_variable, lengths, target_variable, mask, max_target_len, en
             # Calculate and accumulate loss
             mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
             loss += mask_loss
+            print_losses.append(mask_loss.item() * nTotal)
+            n_totals += nTotal
 
-    return loss, mask_loss, nTotal
+    # Perform backpropatation
+    loss.backward()
 
+    # Clip gradients: gradients are modified in place
+    _ = torch.nn.utils.clip_grad_norm_(encoder.parameters(), clip)
+    _ = torch.nn.utils.clip_grad_norm_(decoder.parameters(), clip)
 
-def train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer):
-    # Ensure dropout layers are in train mode
-    encoder.train()
-    decoder.train()
-
-    batch_time = AverageMeter()  # forward prop. + back prop. time
-    losses = AverageMeter()  # loss (per word decoded)
-
-    start = time.time()
-
-    print_losses = []
-    n_totals = 0
-
-    # Batches
-    for i in range(train_loader.__len__()):
-        input_variable, lengths, target_variable, mask, max_target_len = train_loader.__getitem__(i)
-        # Zero gradients
-        encoder_optimizer.zero_grad()
-        decoder_optimizer.zero_grad()
-
-        # Set device options
-        input_variable = input_variable.to(device)
-        lengths = lengths.to(device)
-        target_variable = target_variable.to(device)
-        mask = mask.to(device)
-
-        # Initialize variables
-        loss = 0
-        print_losses = []
-        n_totals = 0
-
-        # Forward pass through encoder
-        encoder_outputs, encoder_hidden = encoder(input_variable, lengths)
-
-        # Create initial decoder input (start with SOS tokens for each sentence)
-        decoder_input = torch.LongTensor([[SOS_token for _ in range(batch_size)]])
-        decoder_input = decoder_input.to(device)
-
-        # Set initial decoder hidden state to the encoder's final hidden state
-        decoder_hidden = encoder_hidden[:decoder.n_layers]
-
-        # Determine if we are using teacher forcing this iteration
-        use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
-
-        # Forward batch of sequences through decoder one time step at a time
-        if use_teacher_forcing:
-            for t in range(max_target_len):
-                decoder_output, decoder_hidden = decoder(
-                    decoder_input, decoder_hidden, encoder_outputs
-                )
-                # Teacher forcing: next input is current target
-                decoder_input = target_variable[t].view(1, -1)
-                # Calculate and accumulate loss
-                mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
-                loss += mask_loss
-                print_losses.append(mask_loss.item() * nTotal)
-                n_totals += nTotal
-        else:
-            for t in range(max_target_len):
-                decoder_output, decoder_hidden = decoder(
-                    decoder_input, decoder_hidden, encoder_outputs
-                )
-                # No teacher forcing: next input is decoder's own current output
-                _, topi = decoder_output.topk(1)
-                decoder_input = torch.LongTensor([[topi[i][0] for i in range(batch_size)]])
-                decoder_input = decoder_input.to(device)
-                # Calculate and accumulate loss
-                mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
-                loss += mask_loss
-                print_losses.append(mask_loss.item() * nTotal)
-                n_totals += nTotal
-
-        # Perform backpropatation
-        loss.backward()
-
-        # Clip gradients: gradients are modified in place
-        _ = torch.nn.utils.clip_grad_norm_(encoder.parameters(), clip)
-        _ = torch.nn.utils.clip_grad_norm_(decoder.parameters(), clip)
-
-        # Adjust model weights
-        encoder_optimizer.step()
-        decoder_optimizer.step()
-
-        # Keep track of metrics
-        losses.update(loss.item(), max_target_len)
-        batch_time.update(time.time() - start)
-
-        start = time.time()
-
-        if i % print_every == 0:
-            print('Epoch: [{0}][{1}/{2}]\t'
-                  'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(epoch, i, len(train_loader),
-                                                                  batch_time=batch_time,
-                                                                  loss=losses))
+    # Adjust model weights
+    encoder_optimizer.step()
+    decoder_optimizer.step()
 
     return sum(print_losses) / n_totals
 
@@ -231,25 +131,52 @@ def main():
 
     # Initializations
     print('Initializing ...')
-    plot_losses = []
-
-    start = time.time()
+    batch_time = AverageMeter()  # forward prop. + back prop. time
+    losses = AverageMeter()  # loss (per word decoded)
 
     # Epochs
     for epoch in range(start_epoch, epochs):
         # One epoch's training
-        loss = train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_optimizer)
-        plot_losses.append(loss)
-
-        # One epoch's validation
-        validate(val_loader, encoder, decoder)
-
-        epoch_time = (time.time() - start)
-        print('epoch time: ' + str(epoch_time))
+        # Ensure dropout layers are in train mode
+        encoder.train()
+        decoder.train()
 
         start = time.time()
 
-    showPlot(plot_losses)
+        # Batches
+        for i in range(train_loader.__len__()):
+            input_variable, lengths, target_variable, mask, max_target_len = train_loader.__getitem__(i)
+            loss = train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder,
+                         encoder_optimizer, decoder_optimizer)
+
+            # Keep track of metrics
+            losses.update(loss.item(), max_target_len)
+            batch_time.update(time.time() - start)
+
+            start = time.time()
+
+            if i % print_every == 0:
+                print('Epoch: [{0}][{1}/{2}]\t'
+                      'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(epoch, i, len(train_loader),
+                                                                      batch_time=batch_time,
+                                                                      loss=losses))
+
+        # Save checkpoint
+        if epoch % save_every == 0:
+            directory = os.path.join(save_dir, '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size))
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            torch.save({
+                'epoch': epoch,
+                'en': encoder.state_dict(),
+                'de': decoder.state_dict(),
+                'en_opt': encoder_optimizer.state_dict(),
+                'de_opt': decoder_optimizer.state_dict(),
+                'loss': loss,
+                'input_lang_dict': input_lang.__dict__,
+                'output_lang_dict': output_lang.__dict__,
+            }, os.path.join(directory, '{}_{}.tar'.format(epoch, 'checkpoint')))
 
 
 if __name__ == '__main__':
