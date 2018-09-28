@@ -84,7 +84,7 @@ class LuongAttnDecoderRNN(nn.Module):
         self.dropout = dropout
 
         # Define layers
-        self.embedding = nn.Embedding(hidden_size, output_size)
+        self.embedding = nn.Embedding(output_size, hidden_size)
         self.embedding_dropout = nn.Dropout(dropout)
         self.gru = nn.GRU(hidden_size, hidden_size, n_layers, dropout=(0 if n_layers == 1 else dropout))
         self.concat = nn.Linear(hidden_size * 2, hidden_size)
