@@ -139,9 +139,10 @@ def main():
 
         # Batches
         # for i in range(train_dataset.__len__()):
-        for i, this_batch in enumerate(train_loader):
+        for i_batch, sample_batched in enumerate(train_loader):
             #input_variable, lengths, target_variable, mask, max_target_len = train_dataset.__getitem__(i)
-            input_variable, lengths, target_variable, mask, max_target_len = this_batch
+            input_variable, lengths, target_variable, mask, max_target_len = sample_batched
+            print(input_variable.size())
             loss = train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder,
                          encoder_optimizer, decoder_optimizer)
 
@@ -151,10 +152,10 @@ def main():
 
             start = time.time()
 
-            if i % print_every == 0:
+            if i_batch % print_every == 0:
                 print('[{0}] Epoch: [{1}][{2}/{3}]\t'
                       'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(timestamp(), epoch, i, len(train_loader),
+                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(timestamp(), epoch, i_batch, len(train_loader),
                                                                       batch_time=batch_time,
                                                                       loss=losses))
 
