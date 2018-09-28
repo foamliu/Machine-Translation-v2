@@ -135,7 +135,7 @@ def main():
                          encoder_optimizer, decoder_optimizer)
 
             # Keep track of metrics
-            losses.update(loss.item(), max_target_len)
+            losses.update(loss, max_target_len)
             batch_time.update(time.time() - start)
 
             start = time.time()
