@@ -1,3 +1,4 @@
+import numpy as np
 from torch import optim
 from torch.utils.data import DataLoader
 
@@ -98,7 +99,8 @@ def evaluate(searcher, sentence, max_length=max_len):
 
 
 def main():
-    train_loader = DataLoader(dataset=TranslationDataset('train'), batch_size=batch_size, shuffle=True, pin_memory=True)
+    train_dataset = TranslationDataset('train')
+    train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, pin_memory=True)
     val_data = TranslationDataset('valid')
 
     # Initialize encoder & decoder models
@@ -136,7 +138,8 @@ def main():
         start = time.time()
 
         # Batches
-        for i, (input_variable, lengths, target_variable, mask, max_target_len) in enumerate(train_loader):
+        for i in range(train_dataset.__len__()):
+            input_variable, lengths, target_variable, mask, max_target_len = train_dataset.__getitem__(i)
             loss = train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder,
                          encoder_optimizer, decoder_optimizer)
 
@@ -175,6 +178,8 @@ def main():
                 'input_lang_dict': input_lang.__dict__,
                 'output_lang_dict': output_lang.__dict__,
             }, os.path.join(directory, '{}_{}.tar'.format(epoch, 'checkpoint')))
+
+        np.random.shuffle(train_dataset.samples)
 
 
 if __name__ == '__main__':
