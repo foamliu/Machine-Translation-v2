@@ -98,7 +98,7 @@ def evaluate(searcher, sentence, max_length=max_len):
 
 
 def main():
-    train_data = DataLoader(dataset=TranslationDataset('train'), batch_size=batch_size, shuffle=True)
+    train_loader = DataLoader(dataset=TranslationDataset('train'), batch_size=batch_size, shuffle=True, pin_memory=True)
     val_data = TranslationDataset('valid')
 
     # Initialize encoder & decoder models
@@ -136,7 +136,7 @@ def main():
         start = time.time()
 
         # Batches
-        for i, batch in enumerate(train_data):
+        for i, batch in enumerate(train_loader):
             input_variable, lengths, target_variable, mask, max_target_len = batch
             loss = train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder,
                          encoder_optimizer, decoder_optimizer)
