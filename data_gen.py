@@ -66,16 +66,11 @@ class TranslationDataset(Dataset):
             self.samples = json.load(open(samples_path, 'r'))
 
     def __getitem__(self, i):
-        pair_batch = []
-
-        for i_batch in range(batch_size):
-            sample = self.samples[i + i_batch]
-            pair_batch.append((sample['input'], sample['output']))
-
-        return batch2TrainData(pair_batch)
+        sample = self.samples[i]
+        return batch2TrainData([(sample['input'], sample['output'])])
 
     def __len__(self):
-        return len(self.samples) // batch_size
+        return len(self.samples)
 
 
 if __name__ == '__main__':
