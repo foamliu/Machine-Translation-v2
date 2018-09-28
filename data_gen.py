@@ -67,7 +67,9 @@ class TranslationDataset(Dataset):
 
     def __getitem__(self, i):
         sample = self.samples[i]
-        return batch2TrainData([(sample['input'], sample['output'])])
+        item = batch2TrainData([(sample['input'], sample['output'])])[0]
+        print(item)
+        return item
 
     def __len__(self):
         return len(self.samples)
