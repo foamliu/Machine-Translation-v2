@@ -27,7 +27,7 @@ hidden_size = 500
 encoder_n_layers = 2
 decoder_n_layers = 2
 dropout = 0.1
-batch_size = 64
+batch_size = 128
 
 train_folder = 'data/ai_challenger_translation_train_20170912'
 valid_folder = 'data/ai_challenger_translation_validation_20170912'
@@ -39,6 +39,9 @@ train_translation_en_filename = 'train.en'
 train_translation_zh_filename = 'train.zh'
 valid_translation_en_filename = 'valid.en'
 valid_translation_zh_filename = 'valid.zh'
+
+# num_train_samples = 8206380
+# num_valid_samples = 7034
 
 # Default word tokens
 PAD_token = 0  # Used for padding short sentences
