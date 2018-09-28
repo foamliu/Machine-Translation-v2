@@ -1,4 +1,5 @@
 from torch import optim
+from torch.utils.data import DataLoader
 
 from data_gen import TranslationDataset
 from models import EncoderRNN, LuongAttnDecoderRNN
@@ -97,7 +98,7 @@ def evaluate(searcher, sentence, max_length=max_len):
 
 
 def main():
-    train_data = TranslationDataset('train')
+    train_data = DataLoader(dataset=TranslationDataset('train'), batch_size=batch_size, shuffle=True)
     val_data = TranslationDataset('valid')
 
     # Initialize encoder & decoder models
@@ -135,8 +136,8 @@ def main():
         start = time.time()
 
         # Batches
-        for i in range(train_data.__len__()):
-            input_variable, lengths, target_variable, mask, max_target_len = train_data.__getitem__(i)
+        for i, batch in enumerate(train_data):
+            input_variable, lengths, target_variable, mask, max_target_len = batch
             loss = train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder,
                          encoder_optimizer, decoder_optimizer)
 

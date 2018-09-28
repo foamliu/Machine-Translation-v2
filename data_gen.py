@@ -1,6 +1,7 @@
 # encoding=utf-8
 import itertools
 
+import numpy as np
 from torch.utils.data import Dataset
 
 from config import *
@@ -76,7 +77,6 @@ class TranslationDataset(Dataset):
 
     def __len__(self):
         return len(self.samples) // batch_size
-
 
     def shuffle(self):
         np.random.shuffle(self.samples)
