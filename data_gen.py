@@ -68,7 +68,7 @@ class TranslationDataset(Dataset):
     def __getitem__(self, i):
         pair_batch = []
 
-        for i_batch in range(batch_size):
+        for i_batch in range(batch_size // torch.cuda.device_count()):
             sample = self.samples[i + i_batch]
             pair_batch.append((sample['input'], sample['output']))
 

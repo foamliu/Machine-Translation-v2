@@ -109,11 +109,11 @@ def main():
     decoder = LuongAttnDecoderRNN(attn_model, hidden_size, output_lang.n_words, decoder_n_layers, dropout)
 
     # If we have multiple GPUs, we can wrap our model using nn.DataParallel.
-    # if torch.cuda.device_count() > 1:
-    #     print("Let's use", torch.cuda.device_count(), "GPUs!")
-    #     # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
-    #     encoder = nn.DataParallel(encoder)
-    #     decoder = nn.DataParallel(decoder)
+    if torch.cuda.device_count() > 1:
+        print("Let's use", torch.cuda.device_count(), "GPUs!")
+        # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
+        encoder = nn.DataParallel(encoder)
+        decoder = nn.DataParallel(decoder)
 
     # Use appropriate device
     encoder = encoder.to(device)
