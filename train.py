@@ -136,8 +136,7 @@ def main():
         start = time.time()
 
         # Batches
-        for i, batch in enumerate(train_loader):
-            input_variable, lengths, target_variable, mask, max_target_len = batch
+        for i, (input_variable, lengths, target_variable, mask, max_target_len) in enumerate(train_loader):
             loss = train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder,
                          encoder_optimizer, decoder_optimizer)
 
