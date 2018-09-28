@@ -1,3 +1,4 @@
+import random
 import re
 import unicodedata
 
@@ -112,3 +113,10 @@ class GreedySearchDecoder(nn.Module):
             decoder_input = torch.unsqueeze(decoder_input, 0)
         # Return collections of word tokens and scores
         return all_tokens, all_scores
+
+
+def pick_n_valid_sentences(n):
+    samples_path = 'data/samples_valid.json'
+    samples = json.load(open(samples_path, 'r'))
+    samples = random.sample(samples, n)
+    return [' '.join([input_lang.index2word(word) for word in sample['input']]) for sample in samples]
