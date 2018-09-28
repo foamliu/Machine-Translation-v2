@@ -68,14 +68,14 @@ class TranslationDataset(Dataset):
     def __getitem__(self, i):
         pair_batch = []
 
-        for i_batch in range(batch_size // torch.cuda.device_count()):
+        for i_batch in range(batch_size * torch.cuda.device_count()):
             sample = self.samples[i + i_batch]
             pair_batch.append((sample['input'], sample['output']))
 
         return batch2TrainData(pair_batch)
 
     def __len__(self):
-        return len(self.samples) // batch_size
+        return len(self.samples) // (batch_size * torch.cuda.device_count())
 
 
 if __name__ == '__main__':
