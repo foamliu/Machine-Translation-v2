@@ -138,8 +138,10 @@ def main():
         start = time.time()
 
         # Batches
-        for i in range(train_dataset.__len__()):
-            input_variable, lengths, target_variable, mask, max_target_len = train_dataset.__getitem__(i)
+        # for i in range(train_dataset.__len__()):
+        for i, this_batch in enumerate(train_loader):
+            #input_variable, lengths, target_variable, mask, max_target_len = train_dataset.__getitem__(i)
+            input_variable, lengths, target_variable, mask, max_target_len = this_batch
             loss = train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder,
                          encoder_optimizer, decoder_optimizer)
 
