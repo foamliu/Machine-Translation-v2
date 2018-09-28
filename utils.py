@@ -4,6 +4,7 @@ import re
 import time
 import unicodedata
 
+import nltk
 from torch import nn
 
 from config import *
@@ -83,7 +84,8 @@ def normalizeString(s):
 
 
 def indexesFromSentence(voc, sentence):
-    return [voc.word2index[word] for word in sentence.split(' ')] + [EOS_token]
+    words = [normalizeString(s) for s in nltk.word_tokenize(sentence)]
+    return [voc.word2index[word] for word in words] + [EOS_token]
 
 
 class GreedySearchDecoder(nn.Module):
