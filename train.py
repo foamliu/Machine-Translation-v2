@@ -93,7 +93,8 @@ def evaluate(searcher, sentence, max_length=max_len):
     # Decode sentence with searcher
     tokens, scores = searcher(input_batch, lengths, max_length)
     # indexes -> words
-    decoded_words = [output_lang.index2word[token.item()] for token in tokens]
+    decoded_words = [output_lang.index2word[token.item()] for token in tokens
+                     if token != EOS_token and token != PAD_token]
     return decoded_words
 
 
@@ -151,8 +152,8 @@ def main():
         searcher = GreedySearchDecoder(encoder, decoder)
         for sentence in pick_n_valid_sentences(10):
             decoded_words = evaluate(searcher, sentence)
-            print(sentence)
-            print(decoded_words)
+            print('英文原文: {}'.format(sentence))
+            print('机器翻译: {}'.format(''.join(decoded_words)))
 
         # Save checkpoint
         if epoch % save_every == 0:
