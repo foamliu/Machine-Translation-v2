@@ -78,6 +78,10 @@ class TranslationDataset(Dataset):
         return len(self.samples) // batch_size
 
 
+    def shuffle(self):
+        np.random.shuffle(self.samples)
+
+
 if __name__ == '__main__':
     print('loading {} samples'.format('valid'))
     samples_path = 'data/samples_valid.json'

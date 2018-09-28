@@ -97,8 +97,8 @@ def evaluate(searcher, sentence, max_length=max_len):
 
 
 def main():
-    train_loader = TranslationDataset('train')
-    val_loader = TranslationDataset('valid')
+    train_data = TranslationDataset('train')
+    val_data = TranslationDataset('valid')
 
     # Initialize encoder & decoder models
     encoder = EncoderRNN(input_lang.n_words, hidden_size, encoder_n_layers, dropout)
@@ -128,8 +128,8 @@ def main():
         start = time.time()
 
         # Batches
-        for i in range(train_loader.__len__()):
-            input_variable, lengths, target_variable, mask, max_target_len = train_loader.__getitem__(i)
+        for i in range(train_data.__len__()):
+            input_variable, lengths, target_variable, mask, max_target_len = train_data.__getitem__(i)
             loss = train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder,
                          encoder_optimizer, decoder_optimizer)
 
@@ -142,7 +142,7 @@ def main():
             if i % print_every == 0:
                 print('[{0}] Epoch: [{1}][{2}/{3}]\t'
                       'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(timestamp(), epoch, i, len(train_loader),
+                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(timestamp(), epoch, i, len(train_data),
                                                                       batch_time=batch_time,
                                                                       loss=losses))
 
@@ -168,6 +168,8 @@ def main():
                 'input_lang_dict': input_lang.__dict__,
                 'output_lang_dict': output_lang.__dict__,
             }, os.path.join(directory, '{}_{}.tar'.format(epoch, 'checkpoint')))
+
+        train_data.shuffle()
 
 
 if __name__ == '__main__':
