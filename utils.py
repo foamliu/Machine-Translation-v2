@@ -119,4 +119,4 @@ def pick_n_valid_sentences(n):
     samples_path = 'data/samples_valid.json'
     samples = json.load(open(samples_path, 'r'))
     samples = random.sample(samples, n)
-    return [' '.join([input_lang.index2word[word] for word in sample['input'] if word != '<end>']) for sample in samples]
+    return [' '.join([input_lang.index2word[token] for token in sample['input'] if token != EOS_token]) for sample in samples]
