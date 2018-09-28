@@ -64,3 +64,5 @@ class Lang:
 
 input_lang = Lang('data/WORDMAP_en.json')
 output_lang = Lang('data/WORDMAP_zh.json')
+# input_lang.n_words = 95996
+# output_lang.n_words = 63726
