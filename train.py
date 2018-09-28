@@ -107,10 +107,51 @@ def train(epoch, train_loader, encoder, decoder, encoder_optimizer, decoder_opti
         target_variable = target_variable.to(device)
         mask = mask.to(device)
 
-        loss, mask_loss, nTotal = calc_loss(input_variable, lengths, target_variable, mask, max_target_len, encoder,
-                                            decoder)
-        print_losses.append(mask_loss.item() * nTotal)
-        n_totals += nTotal
+        # Initialize variables
+        loss = 0
+        print_losses = []
+        n_totals = 0
+
+        # Forward pass through encoder
+        encoder_outputs, encoder_hidden = encoder(input_variable, lengths)
+
+        # Create initial decoder input (start with SOS tokens for each sentence)
+        decoder_input = torch.LongTensor([[SOS_token for _ in range(batch_size)]])
+        decoder_input = decoder_input.to(device)
+
+        # Set initial decoder hidden state to the encoder's final hidden state
+        decoder_hidden = encoder_hidden[:decoder.n_layers]
+
+        # Determine if we are using teacher forcing this iteration
+        use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
+
+        # Forward batch of sequences through decoder one time step at a time
+        if use_teacher_forcing:
+            for t in range(max_target_len):
+                decoder_output, decoder_hidden = decoder(
+                    decoder_input, decoder_hidden, encoder_outputs
+                )
+                # Teacher forcing: next input is current target
+                decoder_input = target_variable[t].view(1, -1)
+                # Calculate and accumulate loss
+                mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
+                loss += mask_loss
+                print_losses.append(mask_loss.item() * nTotal)
+                n_totals += nTotal
+        else:
+            for t in range(max_target_len):
+                decoder_output, decoder_hidden = decoder(
+                    decoder_input, decoder_hidden, encoder_outputs
+                )
+                # No teacher forcing: next input is decoder's own current output
+                _, topi = decoder_output.topk(1)
+                decoder_input = torch.LongTensor([[topi[i][0] for i in range(batch_size)]])
+                decoder_input = decoder_input.to(device)
+                # Calculate and accumulate loss
+                mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
+                loss += mask_loss
+                print_losses.append(mask_loss.item() * nTotal)
+                n_totals += nTotal
 
         # Perform backpropatation
         loss.backward()
@@ -148,7 +189,15 @@ def validate(val_loader, encoder, decoder):
     searcher = GreedySearchDecoder(encoder, decoder)
 
     # Batches
-    for i, (input_array, target_array) in enumerate(val_loader):
+    for i in range(val_loader.__len__()):
+        input_variable, lengths, target_variable, mask, max_target_len = val_loader.__getitem__(i)
+
+        # Set device options
+        input_variable = input_variable.to(device)
+        lengths = lengths.to(device)
+        target_variable = target_variable.to(device)
+        mask = mask.to(device)
+
         # Normalize sentence
         input_sentence = ' '.join([input_lang.index2word[idx.item()] for idx in input_array])
         print(input_sentence)
@@ -184,6 +233,8 @@ def main():
     print('Initializing ...')
     plot_losses = []
 
+    start = time.time()
+
     # Epochs
     for epoch in range(start_epoch, epochs):
         # One epoch's training
@@ -191,9 +242,12 @@ def main():
         plot_losses.append(loss)
 
         # One epoch's validation
-        validate(val_loader=val_loader,
-                 encoder=encoder,
-                 decoder=decoder)
+        validate(val_loader, encoder, decoder)
+
+        epoch_time = (time.time() - start)
+        print('epoch time: ' + str(epoch_time))
+
+        start = time.time()
 
     showPlot(plot_losses)
 

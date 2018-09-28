@@ -1,7 +1,7 @@
 import xml.etree.ElementTree
 from collections import Counter
 
-# import jieba
+import jieba
 import nltk
 from tqdm import tqdm
 
@@ -22,9 +22,9 @@ def build_wordmap_zh():
     word_freq = Counter()
 
     for sentence in tqdm(sentences):
-        # seg_list = jieba.cut(sentence)
+        seg_list = jieba.cut(sentence)
         # Update word frequency
-        word_freq.update(list(sentence))
+        word_freq.update(list(seg_list))
 
     # Create word map
     words = [w for w in word_freq.keys() if word_freq[w] > min_word_freq]
@@ -116,8 +116,8 @@ def build_samples():
             input_en = encode_text(word_map_en, tokens)
 
             sentence_zh = data_zh[idx].strip()
-            # seg_list = jieba.cut(sentence_zh)
-            output_zh = encode_text(word_map_zh, list(sentence_zh))
+            seg_list = jieba.cut(sentence_zh)
+            output_zh = encode_text(word_map_zh, list(seg_list))
 
             if len(input_en) <= max_len and len(
                     output_zh) <= max_len and UNK_token not in input_en and UNK_token not in output_zh:
@@ -125,6 +125,7 @@ def build_samples():
 
         with open(filename, 'w') as f:
             json.dump(samples, f, indent=4)
+
         print('{} {} samples created at: {}.'.format(len(samples), usage, filename))
 
 
