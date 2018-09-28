@@ -14,8 +14,8 @@ n_iteration = 4000
 print_every = 100
 save_every = 1
 workers = 1
-max_len = 20  # Maximum sentence length to consider
-min_word_freq = 3  # Minimum word count threshold for trimming
+max_len = 10  # Maximum sentence length to consider
+min_word_freq = 20  # Minimum word count threshold for trimming
 save_dir = 'models'
 
 # Configure models
