@@ -1,6 +1,5 @@
 import numpy as np
 from torch import optim
-from torch.utils.data import DataLoader
 
 from data_gen import TranslationDataset
 from models import EncoderRNN, LuongAttnDecoderRNN
@@ -100,8 +99,8 @@ def evaluate(searcher, sentence, max_length=max_len):
 
 def main():
     train_dataset = TranslationDataset('train')
-    train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, pin_memory=True,
-                              drop_last=True)
+    # train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, pin_memory=True,
+    #                           drop_last=True)
     val_data = TranslationDataset('valid')
 
     # Initialize encoder & decoder models
@@ -155,7 +154,8 @@ def main():
             if i_batch % print_every == 0:
                 print('[{0}] Epoch: [{1}][{2}/{3}]\t'
                       'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(timestamp(), epoch, i_batch, len(train_loader),
+                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(timestamp(), epoch, i_batch,
+                                                                      train_dataset.__len__(),
                                                                       batch_time=batch_time,
                                                                       loss=losses))
 
