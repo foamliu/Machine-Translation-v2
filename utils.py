@@ -1,4 +1,3 @@
-import multiprocessing
 import re
 import unicodedata
 
@@ -8,14 +7,9 @@ from torch.autograd import Variable
 from config import *
 
 
-# getting the number of CPUs
-def get_available_cpus():
-    return multiprocessing.cpu_count()
-
-
 def maskNLLLoss(inp, target, mask):
     nTotal = mask.sum()
-    crossEntropy = -torch.log(torch.gather(inp, 1, target.view(-1, 1)))
+    crossEntropy = -torch.log(torch.gather(input=inp, dim=1, index=target.view(-1, 1)))
     loss = crossEntropy.masked_select(mask).mean()
     loss = loss.to(device)
     return loss, nTotal.item()
