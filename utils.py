@@ -1,5 +1,7 @@
+import datetime
 import random
 import re
+import time
 import unicodedata
 
 from torch import nn
@@ -119,4 +121,9 @@ def pick_n_valid_sentences(n):
     samples_path = 'data/samples_valid.json'
     samples = json.load(open(samples_path, 'r'))
     samples = random.sample(samples, n)
-    return [' '.join([input_lang.index2word[token] for token in sample['input'] if token != EOS_token]) for sample in samples]
+    return [' '.join([input_lang.index2word[token] for token in sample['input'] if token != EOS_token]) for sample in
+            samples]
+
+
+def timestamp():
+    return datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')

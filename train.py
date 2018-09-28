@@ -1,5 +1,3 @@
-import time
-
 from torch import optim
 
 from data_gen import TranslationDataset
@@ -142,9 +140,9 @@ def main():
             start = time.time()
 
             if i % print_every == 0:
-                print('Epoch: [{0}][{1}/{2}]\t'
+                print('[{0}] Epoch: [{1}][{2}/{3}]\t'
                       'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(epoch, i, len(train_loader),
+                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(timestamp(), epoch, i, len(train_loader),
                                                                       batch_time=batch_time,
                                                                       loss=losses))
 
