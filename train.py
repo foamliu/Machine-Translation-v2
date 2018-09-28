@@ -80,36 +80,22 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
     return sum(print_losses) / n_totals
 
 
-def validate(val_loader, encoder, decoder):
-    # Set dropout layers to eval mode
-    encoder.eval()
-    decoder.eval()
-
-    # Initialize search module
-    searcher = GreedySearchDecoder(encoder, decoder)
-
-    # Batches
-    for i in range(val_loader.__len__()):
-        input_variable, lengths, target_variable, mask, max_target_len = val_loader.__getitem__(i)
-
-        # Set device options
-        input_variable = input_variable.to(device)
-        lengths = lengths.to(device)
-        target_variable = target_variable.to(device)
-        mask = mask.to(device)
-
-        # Normalize sentence
-        input_sentence = ' '.join([input_lang.index2word[idx.item()] for idx in input_array])
-        print(input_sentence)
-
-        # Evaluate sentence
-        output_words = evaluate([input_array], searcher, output_lang, input_sentence)
-        # Format and print response sentence
-        output_words[:] = [x for x in output_words if not (x == '<end>' or x == '<pad>')]
-        output_sentence = ''.join(output_words)
-        print(output_sentence)
-        if i >= 10:
-            break
+def evaluate(searcher, voc, sentence, max_length=max_len):
+    ### Format input sentence as a batch
+    # words -> indexes
+    indexes_batch = [indexesFromSentence(voc, sentence)]
+    # Create lengths tensor
+    lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
+    # Transpose dimensions of batch to match models' expectations
+    input_batch = torch.LongTensor(indexes_batch).transpose(0, 1)
+    # Use appropriate device
+    input_batch = input_batch.to(device)
+    lengths = lengths.to(device)
+    # Decode sentence with searcher
+    tokens, scores = searcher(input_batch, lengths, max_length)
+    # indexes -> words
+    decoded_words = [voc.index2word[token.item()] for token in tokens]
+    return decoded_words
 
 
 def main():

@@ -2,7 +2,6 @@ import re
 import unicodedata
 
 from torch import nn
-from torch.autograd import Variable
 
 from config import *
 
@@ -80,16 +79,8 @@ def normalizeString(s):
     return s
 
 
-# Return a list of indexes, one for each word in the sentence
-def indexes_from_tokens(lang, tokens):
-    return [lang.word2index[word] for word in tokens]
-
-
-def variable_from_sentence(lang, tokens):
-    indexes = indexes_from_tokens(lang, tokens)
-    indexes.append(EOS_token)
-    var = Variable(torch.LongTensor(indexes).view(-1, 1))
-    return var
+def indexesFromSentence(voc, sentence):
+    return [voc.word2index[word] for word in sentence.split(' ')] + [EOS_token]
 
 
 class GreedySearchDecoder(nn.Module):
@@ -121,90 +112,3 @@ class GreedySearchDecoder(nn.Module):
             decoder_input = torch.unsqueeze(decoder_input, 0)
         # Return collections of word tokens and scores
         return all_tokens, all_scores
-
-
-def evaluate(indexes_batch, searcher, voc, max_length=max_len):
-    # Create lengths tensor
-    lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
-    # Transpose dimensions of batch to match models' expectations
-    input_batch = torch.LongTensor(indexes_batch).transpose(0, 1)
-    # Use appropriate device
-    input_batch = input_batch.to(device)
-    lengths = lengths.to(device)
-    # Decode sentence with searcher
-    tokens, scores = searcher(input_batch, lengths, max_length)
-    # indexes -> words
-    decoded_words = [voc.index2word[token.item()] for token in tokens]
-    return decoded_words
-
-
-# Turn a Unicode string to plain ASCII, thanks to
-# http://stackoverflow.com/a/518232/2809427
-def unicodeToAscii(s):
-    return ''.join(
-        c for c in unicodedata.normalize('NFD', s)
-        if unicodedata.category(c) != 'Mn'
-    )
-
-
-# Lowercase, trim, and remove non-letter characters
-def normalizeString(s):
-    s = unicodeToAscii(s.lower().strip())
-    s = re.sub(r"([.!?])", r" \1", s)
-    s = re.sub(r"[^a-zA-Z.!?]+", r" ", s)
-    s = re.sub(r"\s+", r" ", s).strip()
-    return s
-
-
-def evaluateInput(encoder, decoder, searcher, voc):
-    input_sentence = ''
-    while (1):
-        try:
-            # Get input sentence
-            input_sentence = input('> ')
-            # Check if it is quit case
-            if input_sentence == 'q' or input_sentence == 'quit': break
-            # Normalize sentence
-            input_sentence = normalizeString(input_sentence)
-            # Evaluate sentence
-            output_words = evaluate(encoder, decoder, searcher, voc, input_sentence)
-            # Format and print response sentence
-            output_words[:] = [x for x in output_words if not (x == '<end>' or x == '<pad>')]
-            print('Bot:', ' '.join(output_words))
-
-        except KeyError:
-            print("Error: Encountered unknown word.")
-
-
-def evaluate(encoder, decoder, input_tensor, input_length):
-    with torch.no_grad():
-        # Run through encoder
-        encoder_hidden = encoder.init_hidden()
-        encoder_outputs = torch.zeros(max_len, encoder.hidden_size, device=device)
-
-        for ei in range(input_length):
-            encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
-            encoder_outputs[ei] += encoder_output[0, 0]
-
-        # Create starting vectors for decoder
-        decoder_input = torch.tensor([[SOS_token]], device=device)  # SOS
-
-        decoder_hidden = encoder_hidden
-
-        decoded_words = []
-        decoder_attentions = torch.zeros(max_len, max_len)
-
-        for di in range(max_len):
-            decoder_output, decoder_hidden, decoder_attention = decoder(
-                decoder_input, decoder_hidden, encoder_outputs)
-            decoder_attentions[di] = decoder_attention.data
-            topv, topi = decoder_output.data.topk(1)
-            if topi.item() == EOS_token:
-                decoded_words.append('<EOS>')
-                break
-            else:
-                decoded_words.append(output_lang.index2word[topi.item()])
-
-            decoder_input = topi.squeeze().detach()
-
-        return decoded_words, decoder_attentions[:di + 1]
