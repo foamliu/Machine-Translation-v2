@@ -78,6 +78,72 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
     return sum(print_losses) / n_totals
 
 
+def valid(val_data, encoder, decoder):
+    encoder.eval()  # eval mode (no dropout or batchnorm)
+    decoder.eval()
+
+    batch_time = AverageMeter()  # forward prop. + back prop. time
+    losses = AverageMeter()  # loss (per word decoded)
+
+    start = time.time()
+
+    with torch.no_grad():
+        # Batches
+        for i_batch in range(len(val_data)):
+            input_variable, lengths, target_variable, mask, max_target_len = val_data[i_batch]
+
+            # Set device options
+            input_variable = input_variable.to(device)
+            lengths = lengths.to(device)
+            target_variable = target_variable.to(device)
+            mask = mask.to(device)
+
+            # Initialize variables
+            loss = 0
+            print_losses = []
+            n_totals = 0
+
+            # Forward pass through encoder
+            encoder_outputs, encoder_hidden = encoder(input_variable, lengths)
+
+            # Create initial decoder input (start with SOS tokens for each sentence)
+            decoder_input = torch.LongTensor([[SOS_token for _ in range(batch_size)]])
+            decoder_input = decoder_input.to(device)
+
+            # Set initial decoder hidden state to the encoder's final hidden state
+            decoder_hidden = encoder_hidden[:decoder.n_layers]
+
+            for t in range(max_target_len):
+                decoder_output, decoder_hidden = decoder(
+                    decoder_input, decoder_hidden, encoder_outputs
+                )
+                # No teacher forcing: next input is decoder's own current output
+                _, topi = decoder_output.topk(1)
+                decoder_input = torch.LongTensor([[topi[i][0] for i in range(batch_size)]])
+                decoder_input = decoder_input.to(device)
+                # Calculate and accumulate loss
+                mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
+                loss += mask_loss
+                print_losses.append(mask_loss.item() * nTotal)
+                n_totals += nTotal
+
+            # Keep track of metrics
+            losses.update(sum(print_losses) / n_totals)
+            batch_time.update(time.time() - start)
+
+            start = time.time()
+
+            # Print status
+            if i_batch % print_every == 0:
+                print('Validation: [{0}/{1}]\t'
+                      'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(i_batch, len(val_data),
+                                                                      batch_time=batch_time,
+                                                                      loss=losses))
+
+    return loss
+
+
 def evaluate(searcher, sentence, max_length=max_len):
     ### Format input sentence as a batch
     # words -> indexes
@@ -98,21 +164,12 @@ def evaluate(searcher, sentence, max_length=max_len):
 
 
 def main():
-    train_dataset = TranslationDataset('train')
-    # train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, pin_memory=True,
-    #                           drop_last=True)
+    train_data = TranslationDataset('train')
     val_data = TranslationDataset('valid')
 
     # Initialize encoder & decoder models
     encoder = EncoderRNN(input_lang.n_words, hidden_size, encoder_n_layers, dropout)
     decoder = LuongAttnDecoderRNN(attn_model, hidden_size, output_lang.n_words, decoder_n_layers, dropout)
-
-    # If we have multiple GPUs, we can wrap our model using nn.DataParallel.
-    # if torch.cuda.device_count() > 1:
-    #     print("Let's use", torch.cuda.device_count(), "GPUs!")
-    #     # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
-    #     encoder = nn.DataParallel(encoder)
-    #     decoder = nn.DataParallel(decoder)
 
     # Use appropriate device
     encoder = encoder.to(device)
@@ -138,10 +195,8 @@ def main():
         start = time.time()
 
         # Batches
-        for i_batch in range(train_dataset.__len__()):
-            # for i_batch, sample_batched in enumerate(train_loader):
-            input_variable, lengths, target_variable, mask, max_target_len = train_dataset.__getitem__(i_batch)
-            # input_variable, lengths, target_variable, mask, max_target_len = sample_batched
+        for i_batch in range(len(train_data)):
+            input_variable, lengths, target_variable, mask, max_target_len = train_data[i_batch]
             loss = train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder,
                          encoder_optimizer, decoder_optimizer)
 
@@ -155,9 +210,12 @@ def main():
                 print('[{0}] Epoch: [{1}][{2}/{3}]\t'
                       'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                       'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(timestamp(), epoch, i_batch,
-                                                                      train_dataset.__len__(),
+                                                                      len(train_data),
                                                                       batch_time=batch_time,
                                                                       loss=losses))
+
+        val_loss = valid(val_data, encoder, decoder)
+        print('\n * LOSS - {loss:.3f}\n'.format(loss=val_loss))
 
         # Initialize search module
         searcher = GreedySearchDecoder(encoder, decoder)
@@ -182,7 +240,7 @@ def main():
                 'output_lang_dict': output_lang.__dict__,
             }, os.path.join(directory, '{}_{}.tar'.format(epoch, 'checkpoint')))
 
-        np.random.shuffle(train_dataset.samples)
+        np.random.shuffle(train_data.samples)
 
 
 if __name__ == '__main__':

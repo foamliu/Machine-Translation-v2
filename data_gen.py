@@ -58,12 +58,14 @@ class TranslationDataset(Dataset):
         assert self.split in {'train', 'valid'}
 
         print('loading {} samples'.format(split))
+        samples_path = 'data/samples_train.json'
+        samples = json.load(open(samples_path, 'r'))
+        train_count = int(len(samples) * train_split)
+
         if split == 'train':
-            samples_path = 'data/samples_train.json'
-            self.samples = json.load(open(samples_path, 'r'))
+            self.samples = samples[:train_count]
         else:
-            samples_path = 'data/samples_valid.json'
-            self.samples = json.load(open(samples_path, 'r'))
+            self.samples = samples[train_count:]
 
     def __getitem__(self, i):
         pair_batch = []
