@@ -7,7 +7,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Configure training/optimization
 clip = 50.0
-teacher_forcing_ratio = 1.0
+teacher_forcing_ratio = 0.0
 learning_rate = 0.0001
 n_iteration = 4000
 print_every = 100

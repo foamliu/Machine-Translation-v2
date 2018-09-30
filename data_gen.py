@@ -2,7 +2,7 @@
 import itertools
 
 from torch.utils.data import Dataset
-
+import numpy as np
 from config import *
 
 
@@ -60,6 +60,7 @@ class TranslationDataset(Dataset):
         print('loading {} samples'.format(split))
         samples_path = 'data/samples_train.json'
         samples = json.load(open(samples_path, 'r'))
+        np.random.shuffle(samples)
         train_count = int(len(samples) * train_split)
 
         if split == 'train':

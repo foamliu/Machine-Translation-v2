@@ -117,7 +117,6 @@ def valid(val_data, encoder, decoder):
                 decoder_output, decoder_hidden = decoder(
                     decoder_input, decoder_hidden, encoder_outputs
                 )
-                # No teacher forcing: next input is decoder's own current output
                 _, topi = decoder_output.topk(1)
                 decoder_input = torch.LongTensor([[topi[i][0] for i in range(batch_size)]])
                 decoder_input = decoder_input.to(device)
@@ -238,7 +237,7 @@ def main():
                 'loss': loss,
                 'input_lang_dict': input_lang.__dict__,
                 'output_lang_dict': output_lang.__dict__,
-            }, os.path.join(directory, '{}_{}.tar'.format(epoch, 'checkpoint')))
+            }, os.path.join(directory, 'checkpoint_{}_{}.tar'.format(epoch, val_loss)))
 
         np.random.shuffle(train_data.samples)
 
