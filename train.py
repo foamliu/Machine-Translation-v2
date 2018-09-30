@@ -78,69 +78,42 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
     return sum(print_losses) / n_totals
 
 
-def valid(val_data, encoder, decoder):
-    encoder.eval()  # eval mode (no dropout or batchnorm)
-    decoder.eval()
+def valid(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder):
+    # Set device options
+    input_variable = input_variable.to(device)
+    lengths = lengths.to(device)
+    target_variable = target_variable.to(device)
+    mask = mask.to(device)
 
-    batch_time = AverageMeter()  # forward prop. + back prop. time
-    losses = AverageMeter()  # loss (per word decoded)
+    # Initialize variables
+    loss = 0
+    print_losses = []
+    n_totals = 0
 
-    start = time.time()
+    # Forward pass through encoder
+    encoder_outputs, encoder_hidden = encoder(input_variable, lengths)
 
-    with torch.no_grad():
-        # Batches
-        for i_batch in range(len(val_data)):
-            input_variable, lengths, target_variable, mask, max_target_len = val_data[i_batch]
+    # Create initial decoder input (start with SOS tokens for each sentence)
+    decoder_input = torch.LongTensor([[SOS_token for _ in range(batch_size)]])
+    decoder_input = decoder_input.to(device)
 
-            # Set device options
-            input_variable = input_variable.to(device)
-            lengths = lengths.to(device)
-            target_variable = target_variable.to(device)
-            mask = mask.to(device)
+    # Set initial decoder hidden state to the encoder's final hidden state
+    decoder_hidden = encoder_hidden[:decoder.n_layers]
 
-            # Initialize variables
-            loss = 0
-            print_losses = []
-            n_totals = 0
+    for t in range(max_target_len):
+        decoder_output, decoder_hidden = decoder(
+            decoder_input, decoder_hidden, encoder_outputs
+        )
+        _, topi = decoder_output.topk(1)
+        decoder_input = torch.LongTensor([[topi[i][0] for i in range(batch_size)]])
+        decoder_input = decoder_input.to(device)
+        # Calculate and accumulate loss
+        mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
+        loss += mask_loss
+        print_losses.append(mask_loss.item() * nTotal)
+        n_totals += nTotal
 
-            # Forward pass through encoder
-            encoder_outputs, encoder_hidden = encoder(input_variable, lengths)
-
-            # Create initial decoder input (start with SOS tokens for each sentence)
-            decoder_input = torch.LongTensor([[SOS_token for _ in range(batch_size)]])
-            decoder_input = decoder_input.to(device)
-
-            # Set initial decoder hidden state to the encoder's final hidden state
-            decoder_hidden = encoder_hidden[:decoder.n_layers]
-
-            for t in range(max_target_len):
-                decoder_output, decoder_hidden = decoder(
-                    decoder_input, decoder_hidden, encoder_outputs
-                )
-                _, topi = decoder_output.topk(1)
-                decoder_input = torch.LongTensor([[topi[i][0] for i in range(batch_size)]])
-                decoder_input = decoder_input.to(device)
-                # Calculate and accumulate loss
-                mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
-                loss += mask_loss
-                print_losses.append(mask_loss.item() * nTotal)
-                n_totals += nTotal
-
-            # Keep track of metrics
-            losses.update(sum(print_losses) / n_totals)
-            batch_time.update(time.time() - start)
-
-            start = time.time()
-
-            # Print status
-            if i_batch % print_every == 0:
-                print('Validation: [{0}/{1}]\t'
-                      'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(i_batch, len(val_data),
-                                                                      batch_time=batch_time,
-                                                                      loss=losses))
-
-    return loss
+    return sum(print_losses) / n_totals
 
 
 def evaluate(searcher, sentence, max_length=max_len):
@@ -181,11 +154,23 @@ def main():
 
     # Initializations
     print('Initializing ...')
-    batch_time = AverageMeter()  # forward prop. + back prop. time
-    losses = AverageMeter()  # loss (per word decoded)
+    train_batch_time = AverageMeter()  # forward prop. + back prop. time
+    train_losses = AverageMeter()  # loss (per word decoded)
+    val_batch_time = AverageMeter()
+    val_losses = AverageMeter()
+
+    best_loss = 10000
+    epochs_since_improvement = 0
 
     # Epochs
     for epoch in range(start_epoch, epochs):
+        # Decay learning rate if there is no improvement for 8 consecutive epochs, and terminate training after 20
+        if epochs_since_improvement == 20:
+            break
+        if epochs_since_improvement > 0 and epochs_since_improvement % 8 == 0:
+            adjust_learning_rate(decoder_optimizer, 0.8)
+            adjust_learning_rate(encoder_optimizer, 0.8)
+
         # One epoch's training
         # Ensure dropout layers are in train mode
         encoder.train()
@@ -200,8 +185,8 @@ def main():
                          encoder_optimizer, decoder_optimizer)
 
             # Keep track of metrics
-            losses.update(loss, max_target_len)
-            batch_time.update(time.time() - start)
+            train_losses.update(loss)
+            train_batch_time.update(time.time() - start)
 
             start = time.time()
 
@@ -210,10 +195,36 @@ def main():
                       'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                       'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(timestamp(), epoch, i_batch,
                                                                       len(train_data),
-                                                                      batch_time=batch_time,
-                                                                      loss=losses))
+                                                                      batch_time=train_batch_time,
+                                                                      loss=train_losses))
 
-        val_loss = valid(val_data, encoder, decoder)
+        # One epoch's validation
+        encoder.eval()  # eval mode (no dropout or batchnorm)
+        decoder.eval()
+
+        start = time.time()
+
+        with torch.no_grad():
+            # Batches
+            for i_batch in range(len(val_data)):
+                input_variable, lengths, target_variable, mask, max_target_len = val_data[i_batch]
+                val_loss = valid(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder)
+
+                # Keep track of metrics
+                val_losses.update(val_loss)
+                val_batch_time.update(time.time() - start)
+
+                start = time.time()
+
+                # Print status
+                if i_batch % print_every == 0:
+                    print('Validation: [{0}/{1}]\t'
+                          'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                          'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(i_batch, len(val_data),
+                                                                          batch_time=val_batch_time,
+                                                                          loss=val_losses))
+
+        val_loss = val_losses.avg
         print('\n * LOSS - {loss:.3f}\n'.format(loss=val_loss))
 
         # Initialize search module
@@ -223,22 +234,16 @@ def main():
             print('英文原文: {}'.format(sentence))
             print('机器翻译: {}'.format(''.join(decoded_words)))
 
-        # Save checkpoint
-        if epoch % save_every == 0:
-            directory = os.path.join(save_dir, '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size))
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            torch.save({
-                'epoch': epoch,
-                'en': encoder.state_dict(),
-                'de': decoder.state_dict(),
-                'en_opt': encoder_optimizer.state_dict(),
-                'de_opt': decoder_optimizer.state_dict(),
-                'loss': loss,
-                'input_lang_dict': input_lang.__dict__,
-                'output_lang_dict': output_lang.__dict__,
-            }, os.path.join(directory, 'checkpoint_{}_{}.tar'.format(epoch, val_loss)))
+        # Check if there was an improvement
+        is_best = val_loss < best_loss
+        best_loss = min(best_loss, val_loss)
+        if not is_best:
+            epochs_since_improvement += 1
+            print("\nEpochs since last improvement: %d\n" % (epochs_since_improvement,))
+        else:
+            epochs_since_improvement = 0
 
+        save_checkpoint(epoch, encoder, decoder, encoder_optimizer, decoder_optimizer, val_loss, is_best)
         np.random.shuffle(train_data.samples)
 
 

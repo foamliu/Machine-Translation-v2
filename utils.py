@@ -129,3 +129,33 @@ def pick_n_valid_sentences(n):
 
 def timestamp():
     return datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+
+
+def save_checkpoint(epoch, encoder, decoder, encoder_optimizer, decoder_optimizer, val_loss, is_best):
+    # Save checkpoint
+    state = {
+        'en': encoder.state_dict(),
+        'de': decoder.state_dict(),
+        'en_opt': encoder_optimizer.state_dict(),
+        'de_opt': decoder_optimizer.state_dict(),
+        'input_lang_dict': input_lang.__dict__,
+        'output_lang_dict': output_lang.__dict__,
+    }
+    filename = 'checkpoint_{0}_{1:.3f}.tar'.format(epoch, val_loss)
+    torch.save(state, filename)
+    # If this checkpoint is the best so far, store a copy so it doesn't get overwritten by a worse checkpoint
+    if is_best:
+        torch.save(state, 'BEST_checkpoint.tar')
+
+
+def adjust_learning_rate(optimizer, shrink_factor):
+    """
+    Shrinks learning rate by a specified factor.
+    :param optimizer: optimizer whose learning rate must be shrunk.
+    :param shrink_factor: factor in interval (0, 1) to multiply learning rate with.
+    """
+
+    print("\nDECAYING learning rate.")
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = param_group['lr'] * shrink_factor
+    print("The new learning rate is %f\n" % (optimizer.param_groups[0]['lr'],))
