@@ -227,13 +227,6 @@ def main():
         val_loss = val_losses.avg
         print('\n * LOSS - {loss:.3f}\n'.format(loss=val_loss))
 
-        # Initialize search module
-        searcher = GreedySearchDecoder(encoder, decoder)
-        for sentence in pick_n_valid_sentences(10):
-            decoded_words = evaluate(searcher, sentence)
-            print('英文原文: {}'.format(sentence))
-            print('机器翻译: {}'.format(''.join(decoded_words)))
-
         # Check if there was an improvement
         is_best = val_loss < best_loss
         best_loss = min(best_loss, val_loss)
@@ -244,6 +237,14 @@ def main():
             epochs_since_improvement = 0
 
         save_checkpoint(epoch, encoder, decoder, encoder_optimizer, decoder_optimizer, val_loss, is_best)
+
+        # Initialize search module
+        searcher = GreedySearchDecoder(encoder, decoder)
+        for sentence in pick_n_valid_sentences(10):
+            decoded_words = evaluate(searcher, sentence)
+            print('英文原文: {}'.format(sentence))
+            print('机器翻译: {}'.format(''.join(decoded_words)))
+
         np.random.shuffle(train_data.samples)
 
 

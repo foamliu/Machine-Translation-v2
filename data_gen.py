@@ -6,6 +6,10 @@ from torch.utils.data import Dataset
 
 from config import *
 
+samples_path = 'data/samples_train.json'
+samples = json.load(open(samples_path, 'r'))
+np.random.shuffle(samples)
+
 
 def zeroPadding(l, fillvalue=PAD_token):
     return list(itertools.zip_longest(*l, fillvalue=fillvalue))
@@ -59,9 +63,6 @@ class TranslationDataset(Dataset):
         assert self.split in {'train', 'valid'}
 
         print('loading {} samples'.format(split))
-        samples_path = 'data/samples_train.json'
-        samples = json.load(open(samples_path, 'r'))
-        np.random.shuffle(samples)
         train_count = int(len(samples) * train_split)
 
         if split == 'train':
