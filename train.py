@@ -116,7 +116,7 @@ def valid(input_variable, lengths, target_variable, mask, max_target_len, encode
     return sum(print_losses) / n_totals
 
 
-def evaluate(searcher, sentence, max_length=max_len):
+def evaluate(searcher, sentence, input_lang, output_lang, max_length=max_len):
     ### Format input sentence as a batch
     # words -> indexes
     indexes_batch = [indexesFromSentence(input_lang, sentence)]
@@ -136,6 +136,11 @@ def evaluate(searcher, sentence, max_length=max_len):
 
 
 def main():
+    input_lang = Lang('data/WORDMAP_en.json')
+    output_lang = Lang('data/WORDMAP_zh.json')
+    print("input_lang.n_words: " + str(input_lang.n_words))
+    print("output_lang.n_words: " + str(output_lang.n_words))
+
     train_data = TranslationDataset('train')
     val_data = TranslationDataset('valid')
 
@@ -241,7 +246,7 @@ def main():
         # Initialize search module
         searcher = GreedySearchDecoder(encoder, decoder)
         for sentence in pick_n_valid_sentences(10):
-            decoded_words = evaluate(searcher, sentence)
+            decoded_words = evaluate(searcher, sentence, input_lang, output_lang)
             print('英文原文: {}'.format(sentence))
             print('机器翻译: {}'.format(''.join(decoded_words)))
 

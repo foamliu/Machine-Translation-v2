@@ -64,7 +64,4 @@ class Lang:
         self.n_words = len(word_map)
 
 
-input_lang = Lang('data/WORDMAP_en.json')
-output_lang = Lang('data/WORDMAP_zh.json')
-print("input_lang.n_words: " + str(input_lang.n_words))
-print("output_lang.n_words: " + str(output_lang.n_words))
+
