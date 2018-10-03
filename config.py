@@ -16,6 +16,8 @@ workers = 1
 max_len = 10  # Maximum sentence length to consider
 min_word_freq = 20  # Minimum word count threshold for trimming
 save_dir = 'models'
+input_lang_vocab_size = 5000
+output_lang_vocab_size = 5000
 
 # Configure models
 model_name = 'cb_model'

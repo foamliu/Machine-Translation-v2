@@ -27,7 +27,8 @@ def build_wordmap_zh():
         word_freq.update(list(seg_list))
 
     # Create word map
-    words = [w for w in word_freq.keys() if word_freq[w] > min_word_freq]
+    # words = [w for w in word_freq.keys() if word_freq[w] > min_word_freq]
+    words = word_freq.most_common(output_lang_vocab_size - 4)
     word_map = {k: v + 4 for v, k in enumerate(words)}
     word_map['<pad>'] = 0
     word_map['<start>'] = 1
@@ -55,7 +56,8 @@ def build_wordmap_en():
         word_freq.update(tokens)
 
     # Create word map
-    words = [w for w in word_freq.keys() if word_freq[w] > min_word_freq]
+    # words = [w for w in word_freq.keys() if word_freq[w] > min_word_freq]
+    words = word_freq.most_common(input_lang_vocab_size - 4)
     word_map = {k: v + 4 for v, k in enumerate(words)}
     word_map['<pad>'] = 0
     word_map['<start>'] = 1
