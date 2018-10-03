@@ -241,7 +241,8 @@ def main():
         else:
             epochs_since_improvement = 0
 
-        save_checkpoint(epoch, encoder, decoder, encoder_optimizer, decoder_optimizer, val_loss, is_best)
+        save_checkpoint(epoch, encoder, decoder, encoder_optimizer, decoder_optimizer, input_lang, output_lang,
+                        val_loss, is_best)
 
         # Initialize search module
         searcher = GreedySearchDecoder(encoder, decoder)
