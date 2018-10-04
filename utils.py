@@ -131,7 +131,8 @@ def timestamp():
     return datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
 
 
-def save_checkpoint(epoch, encoder, decoder, encoder_optimizer, decoder_optimizer, val_loss, is_best):
+def save_checkpoint(epoch, encoder, decoder, encoder_optimizer, decoder_optimizer, input_lang, output_lang, val_loss,
+                    is_best):
     # Save checkpoint
     state = {
         'en': encoder.state_dict(),
