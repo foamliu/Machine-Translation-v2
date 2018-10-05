@@ -246,7 +246,7 @@ def main():
 
         # Initialize search module
         searcher = GreedySearchDecoder(encoder, decoder)
-        for sentence in pick_n_valid_sentences(10):
+        for sentence in pick_n_valid_sentences(input_lang, 10):
             decoded_words = evaluate(searcher, sentence, input_lang, output_lang)
             print('英文原文: {}'.format(sentence))
             print('机器翻译: {}'.format(''.join(decoded_words)))

@@ -119,7 +119,7 @@ class GreedySearchDecoder(nn.Module):
         return all_tokens, all_scores
 
 
-def pick_n_valid_sentences(n):
+def pick_n_valid_sentences(input_lang, n):
     samples_path = 'data/samples_valid.json'
     samples = json.load(open(samples_path, 'r'))
     samples = random.sample(samples, n)
