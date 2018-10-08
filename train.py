@@ -186,11 +186,11 @@ def main():
         # Batches
         for i_batch in range(len(train_data)):
             input_variable, lengths, target_variable, mask, max_target_len = train_data[i_batch]
-            loss = train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder,
+            train_loss = train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder,
                          encoder_optimizer, decoder_optimizer)
 
             # Keep track of metrics
-            train_losses.update(loss)
+            train_losses.update(train_loss)
             train_batch_time.update(time.time() - start)
 
             start = time.time()
