@@ -21,13 +21,13 @@ output_lang_vocab_size = 5000
 
 # Configure models
 model_name = 'cb_model'
-attn_model = 'dot'
+attn_model = 'general'
 start_epoch = 0
 epochs = 120
-hidden_size = 1024
-encoder_n_layers = 3
-decoder_n_layers = 3
-dropout = 0.1
+hidden_size = 500
+encoder_n_layers = 2
+decoder_n_layers = 2
+dropout = 0.05
 batch_size = 200
 train_split = 0.9
 

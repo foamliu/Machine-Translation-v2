@@ -8,7 +8,7 @@ from config import *
 
 samples_path = 'data/samples_train.json'
 samples = json.load(open(samples_path, 'r'))
-np.random.shuffle(samples)
+# np.random.shuffle(samples)
 
 
 def zeroPadding(l, fillvalue=PAD_token):

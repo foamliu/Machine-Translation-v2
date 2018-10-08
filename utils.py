@@ -120,8 +120,10 @@ class GreedySearchDecoder(nn.Module):
 
 
 def pick_n_valid_sentences(input_lang, n):
-    samples_path = 'data/samples_valid.json'
+    samples_path = 'data/samples_train.json'
     samples = json.load(open(samples_path, 'r'))
+    train_count = int(len(samples) * train_split)
+    samples = samples[train_count:]
     samples = random.sample(samples, n)
     return [' '.join([input_lang.index2word[token] for token in sample['input'] if token != EOS_token]) for sample in
             samples]
@@ -142,7 +144,7 @@ def save_checkpoint(epoch, encoder, decoder, encoder_optimizer, decoder_optimize
         'input_lang_dict': input_lang.__dict__,
         'output_lang_dict': output_lang.__dict__,
     }
-    filename = 'checkpoint_{0}_{1:.3f}.tar'.format(epoch, val_loss)
+    filename = '{0}/checkpoint_{1}_{2:.3f}.tar'.format(save_dir, epoch, val_loss)
     torch.save(state, filename)
     # If this checkpoint is the best so far, store a copy so it doesn't get overwritten by a worse checkpoint
     if is_best:
