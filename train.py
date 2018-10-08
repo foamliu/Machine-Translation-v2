@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 from torch import optim
 
@@ -164,7 +166,7 @@ def main():
     val_batch_time = AverageMeter()
     val_losses = AverageMeter()
 
-    best_loss = 10000
+    best_loss = sys.float_info.max
     epochs_since_improvement = 0
 
     # Epochs
@@ -187,7 +189,7 @@ def main():
         for i_batch in range(len(train_data)):
             input_variable, lengths, target_variable, mask, max_target_len = train_data[i_batch]
             train_loss = train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder,
-                         encoder_optimizer, decoder_optimizer)
+                               encoder_optimizer, decoder_optimizer)
 
             # Keep track of metrics
             train_losses.update(train_loss)
