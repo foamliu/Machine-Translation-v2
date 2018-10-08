@@ -2,7 +2,7 @@ import numpy as np
 from torch import optim
 
 from data_gen import TranslationDataset
-from models import EncoderRNN, AttentionDecoderRNN
+from models import EncoderRNN, LuongAttnDecoderRNN
 from utils import *
 
 
@@ -34,35 +34,35 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
     decoder_hidden = encoder_hidden[:decoder.n_layers]
 
     # Determine if we are using teacher forcing this iteration
-    # use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
-    #
-    # # Forward batch of sequences through decoder one time step at a time
-    # if use_teacher_forcing:
-    #     for t in range(max_target_len):
-    #         decoder_output, decoder_hidden = decoder(
-    #             decoder_input, decoder_hidden, encoder_outputs
-    #         )
-    #         # Teacher forcing: next input is current target
-    #         decoder_input = target_variable[t].view(1, -1)
-    #         # Calculate and accumulate loss
-    #         mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
-    #         loss += mask_loss
-    #         print_losses.append(mask_loss.item() * nTotal)
-    #         n_totals += nTotal
-    # else:
-    for t in range(max_target_len):
-        decoder_output, decoder_hidden = decoder(
-            decoder_input, decoder_hidden, encoder_outputs
-        )
-        # No teacher forcing: next input is decoder's own current output
-        _, topi = decoder_output.topk(1)
-        decoder_input = torch.LongTensor([[topi[i][0] for i in range(batch_size)]])
-        decoder_input = decoder_input.to(device)
-        # Calculate and accumulate loss
-        mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
-        loss += mask_loss
-        print_losses.append(mask_loss.item() * nTotal)
-        n_totals += nTotal
+    use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
+
+    # Forward batch of sequences through decoder one time step at a time
+    if use_teacher_forcing:
+        for t in range(max_target_len):
+            decoder_output, decoder_hidden = decoder(
+                decoder_input, decoder_hidden, encoder_outputs
+            )
+            # Teacher forcing: next input is current target
+            decoder_input = target_variable[t].view(1, -1)
+            # Calculate and accumulate loss
+            mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
+            loss += mask_loss
+            print_losses.append(mask_loss.item() * nTotal)
+            n_totals += nTotal
+    else:
+        for t in range(max_target_len):
+            decoder_output, decoder_hidden = decoder(
+                decoder_input, decoder_hidden, encoder_outputs
+            )
+            # No teacher forcing: next input is decoder's own current output
+            _, topi = decoder_output.topk(1)
+            decoder_input = torch.LongTensor([[topi[i][0] for i in range(batch_size)]])
+            decoder_input = decoder_input.to(device)
+            # Calculate and accumulate loss
+            mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
+            loss += mask_loss
+            print_losses.append(mask_loss.item() * nTotal)
+            n_totals += nTotal
 
     # Perform backpropatation
     loss.backward()
@@ -146,7 +146,7 @@ def main():
 
     # Initialize encoder & decoder models
     encoder = EncoderRNN(input_lang.n_words, hidden_size, encoder_n_layers, dropout)
-    decoder = AttentionDecoderRNN(attn_model, hidden_size, output_lang.n_words, decoder_n_layers, dropout)
+    decoder = LuongAttnDecoderRNN(attn_model, hidden_size, output_lang.n_words, decoder_n_layers, dropout)
 
     # Use appropriate device
     encoder = encoder.to(device)
