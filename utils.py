@@ -123,7 +123,8 @@ def pick_n_valid_sentences(input_lang, n):
     samples_path = 'data/samples_train.json'
     samples = json.load(open(samples_path, 'r'))
     train_count = int(len(samples) * train_split)
-    samples = samples[train_count:]
+    # samples = samples[train_count:]
+    self.samples = samples[:train_count]
     samples = random.sample(samples, n)
     return [' '.join([input_lang.index2word[token] for token in sample['input'] if token != EOS_token]) for sample in
             samples]
