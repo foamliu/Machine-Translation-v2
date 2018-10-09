@@ -254,6 +254,7 @@ def main():
             print('Chinese: {}'.format(''.join(decoded_words)))
 
         np.random.shuffle(train_data.samples)
+        np.random.shuffle(val_data.samples)
 
 
 if __name__ == '__main__':

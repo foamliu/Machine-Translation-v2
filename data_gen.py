@@ -2,7 +2,7 @@
 import itertools
 
 from torch.utils.data import Dataset
-
+import numpy as np
 from config import *
 
 samples_path = 'data/samples_train.json'
@@ -72,6 +72,7 @@ class TranslationDataset(Dataset):
             self.samples = samples[train_count:]
 
         print('count: ' + str(len(self.samples) // batch_size * batch_size))
+        np.random.shuffle(self.samples)
 
     def __getitem__(self, i):
         pair_batch = []
