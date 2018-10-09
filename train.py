@@ -166,7 +166,7 @@ def main():
     val_batch_time = AverageMeter()
     val_losses = AverageMeter()
 
-    best_loss = sys.float_info.max
+    best_loss = 100000
     epochs_since_improvement = 0
 
     # Epochs

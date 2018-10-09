@@ -149,10 +149,12 @@ def save_checkpoint(epoch, encoder, decoder, encoder_optimizer, decoder_optimize
         'input_lang_dict': input_lang.__dict__,
         'output_lang_dict': output_lang.__dict__,
     }
-    filename = '{0}/checkpoint_{1}_{2:.3f}.tar'.format(save_dir, epoch, val_loss)
-    torch.save(state, filename)
-    # If this checkpoint is the best so far, store a copy so it doesn't get overwritten by a worse checkpoint
+
     if is_best:
+        filename = '{0}/checkpoint_{1}_{2:.3f}.tar'.format(save_dir, epoch, val_loss)
+        torch.save(state, filename)
+
+        # If this checkpoint is the best so far, store a copy so it doesn't get overwritten by a worse checkpoint
         torch.save(state, 'BEST_checkpoint.tar')
 
 
