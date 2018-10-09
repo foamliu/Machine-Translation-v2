@@ -10,11 +10,7 @@ from tqdm import tqdm
 from config import output_lang_vocab_size, input_lang_vocab_size, max_len, UNK_token
 from config import train_translation_folder, train_translation_zh_filename, train_translation_en_filename
 from config import valid_translation_folder, valid_translation_zh_filename, valid_translation_en_filename
-from utils import normalizeString
-
-
-def encode_text(word_map, c):
-    return [word_map.get(word, word_map['<unk>']) for word in c] + [word_map['<end>']]
+from utils import normalizeString, encode_text
 
 
 def build_wordmap_zh():

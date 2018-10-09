@@ -10,6 +10,10 @@ from torch import nn
 from config import *
 
 
+def encode_text(word_map, c):
+    return [word_map.get(word, word_map['<unk>']) for word in c] + [word_map['<end>']]
+
+
 # Since we are dealing with batches of padded sequences, we cannot simply consider all elements of
 # the tensor when calculating loss. We define maskNLLLoss to calculate our loss based on our
 # decoder’s output tensor, the target tensor, and a binary mask tensor describing the padding of the
@@ -85,7 +89,7 @@ def normalizeString(s):
 
 def indexesFromSentence(voc, sentence):
     words = [normalizeString(s) for s in nltk.word_tokenize(sentence)]
-    return [voc.word2index[word] for word in words] + [EOS_token]
+    return encode_text(voc.word2index, words)
 
 
 class GreedySearchDecoder(nn.Module):
