@@ -1,13 +1,14 @@
 # encoding=utf-8
 import itertools
 
-import numpy as np
 from torch.utils.data import Dataset
 
 from config import *
 
 samples_path = 'data/samples_train.json'
 samples = json.load(open(samples_path, 'r'))
+
+
 # np.random.shuffle(samples)
 
 
@@ -69,6 +70,8 @@ class TranslationDataset(Dataset):
             self.samples = samples[:train_count]
         else:
             self.samples = samples[train_count:]
+
+        print('count: ' + str(len(self.samples)))
 
     def __getitem__(self, i):
         pair_batch = []
