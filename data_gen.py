@@ -71,7 +71,7 @@ class TranslationDataset(Dataset):
         else:
             self.samples = samples[train_count:]
 
-        print('count: ' + str(len(self.samples)) // batch_size * batch_size)
+        print('count: ' + str(len(self.samples) // batch_size * batch_size))
 
     def __getitem__(self, i):
         pair_batch = []
