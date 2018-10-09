@@ -48,6 +48,23 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
+# Exponentially weighted averages
+class ExpoAverageMeter(object):
+    # Exponential Weighted Average Meter
+    def __init__(self, beta=0.9):
+        self.reset()
+
+    def reset(self):
+        self.beta = 0.9
+        self.val = 0
+        self.avg = 0
+        self.count = 0
+
+    def update(self, val):
+        self.val = val
+        self.avg = self.beta * self.avg + (1 - self.beta) * self.val
+
+
 def accuracy(scores, targets, k):
     """
     Computes top-k accuracy, from predicted and true labels.

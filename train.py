@@ -90,48 +90,50 @@ def valid(input_variable, lengths, target_variable, mask, max_target_len, encode
     print_losses = []
     n_totals = 0
 
-    # Forward pass through encoder
-    encoder_outputs, encoder_hidden = encoder(input_variable, lengths)
+    with torch.no_grad():
+        # Forward pass through encoder
+        encoder_outputs, encoder_hidden = encoder(input_variable, lengths)
 
-    # Create initial decoder input (start with SOS tokens for each sentence)
-    decoder_input = torch.LongTensor([[SOS_token for _ in range(batch_size)]])
-    decoder_input = decoder_input.to(device)
-
-    # Set initial decoder hidden state to the encoder's final hidden state
-    decoder_hidden = encoder_hidden[:decoder.n_layers]
-
-    for t in range(max_target_len):
-        decoder_output, decoder_hidden = decoder(
-            decoder_input, decoder_hidden, encoder_outputs
-        )
-        _, topi = decoder_output.topk(1)
-        decoder_input = torch.LongTensor([[topi[i][0] for i in range(batch_size)]])
+        # Create initial decoder input (start with SOS tokens for each sentence)
+        decoder_input = torch.LongTensor([[SOS_token for _ in range(batch_size)]])
         decoder_input = decoder_input.to(device)
-        # Calculate and accumulate loss
-        mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
-        loss += mask_loss
-        print_losses.append(mask_loss.item() * nTotal)
-        n_totals += nTotal
+
+        # Set initial decoder hidden state to the encoder's final hidden state
+        decoder_hidden = encoder_hidden[:decoder.n_layers]
+
+        for t in range(max_target_len):
+            decoder_output, decoder_hidden = decoder(
+                decoder_input, decoder_hidden, encoder_outputs
+            )
+            _, topi = decoder_output.topk(1)
+            decoder_input = torch.LongTensor([[topi[i][0] for i in range(batch_size)]])
+            decoder_input = decoder_input.to(device)
+            # Calculate and accumulate loss
+            mask_loss, nTotal = maskNLLLoss(decoder_output, target_variable[t], mask[t])
+            loss += mask_loss
+            print_losses.append(mask_loss.item() * nTotal)
+            n_totals += nTotal
 
     return sum(print_losses) / n_totals
 
 
 def evaluate(searcher, sentence, input_lang, output_lang, max_length=max_len):
-    ### Format input sentence as a batch
-    # words -> indexes
-    indexes_batch = [indexesFromSentence(input_lang, sentence)]
-    # Create lengths tensor
-    lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
-    # Transpose dimensions of batch to match models' expectations
-    input_batch = torch.LongTensor(indexes_batch).transpose(0, 1)
-    # Use appropriate device
-    input_batch = input_batch.to(device)
-    lengths = lengths.to(device)
-    # Decode sentence with searcher
-    tokens, scores = searcher(input_batch, lengths, max_length)
-    # indexes -> words
-    decoded_words = [output_lang.index2word[token.item()] for token in tokens
-                     if token != EOS_token and token != PAD_token]
+    with torch.no_grad():
+        ### Format input sentence as a batch
+        # words -> indexes
+        indexes_batch = [indexesFromSentence(input_lang, sentence)]
+        # Create lengths tensor
+        lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
+        # Transpose dimensions of batch to match models' expectations
+        input_batch = torch.LongTensor(indexes_batch).transpose(0, 1)
+        # Use appropriate device
+        input_batch = input_batch.to(device)
+        lengths = lengths.to(device)
+        # Decode sentence with searcher
+        tokens, scores = searcher(input_batch, lengths, max_length)
+        # indexes -> words
+        decoded_words = [output_lang.index2word[token.item()] for token in tokens
+                         if token != EOS_token and token != PAD_token]
     return decoded_words
 
 
@@ -159,10 +161,10 @@ def main():
 
     # Initializations
     print('Initializing ...')
-    train_batch_time = AverageMeter()  # forward prop. + back prop. time
-    train_losses = AverageMeter()  # loss (per word decoded)
-    val_batch_time = AverageMeter()
-    val_losses = AverageMeter()
+    train_batch_time = ExpoAverageMeter()  # forward prop. + back prop. time
+    train_losses = ExpoAverageMeter()  # loss (per word decoded)
+    val_batch_time = ExpoAverageMeter()
+    val_losses = ExpoAverageMeter()
 
     best_loss = 100000
     epochs_since_improvement = 0
@@ -195,6 +197,7 @@ def main():
 
             start = time.time()
 
+            # Print status
             if i_batch % print_every == 0:
                 print('[{0}] Epoch: [{1}][{2}/{3}]\t'
                       'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
@@ -204,30 +207,26 @@ def main():
                                                                       loss=train_losses))
 
         # One epoch's validation
-        encoder.eval()  # eval mode (no dropout or batchnorm)
-        decoder.eval()
-
         start = time.time()
 
-        with torch.no_grad():
-            # Batches
-            for i_batch in range(len(train_data)):
-                input_variable, lengths, target_variable, mask, max_target_len = train_data[i_batch]
-                val_loss = valid(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder)
+        # Batches
+        for i_batch in range(len(val_data)):
+            input_variable, lengths, target_variable, mask, max_target_len = val_data[i_batch]
+            val_loss = valid(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder)
 
-                # Keep track of metrics
-                val_losses.update(val_loss)
-                val_batch_time.update(time.time() - start)
+            # Keep track of metrics
+            val_losses.update(val_loss)
+            val_batch_time.update(time.time() - start)
 
-                start = time.time()
+            start = time.time()
 
-                # Print status
-                if i_batch % print_every == 0:
-                    print('Validation: [{0}/{1}]\t'
-                          'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                          'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(i_batch, len(val_data),
-                                                                          batch_time=val_batch_time,
-                                                                          loss=val_losses))
+            # Print status
+            if i_batch % print_every == 0:
+                print('Validation: [{0}/{1}]\t'
+                      'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(i_batch, len(val_data),
+                                                                      batch_time=val_batch_time,
+                                                                      loss=val_losses))
 
         val_loss = val_losses.avg
         print('\n * LOSS - {loss:.3f}\n'.format(loss=val_loss))
@@ -252,6 +251,7 @@ def main():
             print('= {}'.format(target_sentence))
             print('< {}'.format(''.join(decoded_words)))
 
+        # Reshuffle train and valid samples
         np.random.shuffle(train_data.samples)
         np.random.shuffle(val_data.samples)
 
