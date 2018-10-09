@@ -211,8 +211,8 @@ def main():
 
         with torch.no_grad():
             # Batches
-            for i_batch in range(len(val_data)):
-                input_variable, lengths, target_variable, mask, max_target_len = val_data[i_batch]
+            for i_batch in range(len(train_data)):
+                input_variable, lengths, target_variable, mask, max_target_len = train_data[i_batch]
                 val_loss = valid(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder)
 
                 # Keep track of metrics
