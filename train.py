@@ -246,10 +246,11 @@ def main():
 
         # Initialize search module
         searcher = GreedySearchDecoder(encoder, decoder)
-        for sentence in pick_n_valid_sentences(input_lang, 10):
-            decoded_words = evaluate(searcher, sentence, input_lang, output_lang)
-            print('English: {}'.format(sentence))
-            print('Chinese: {}'.format(''.join(decoded_words)))
+        for input_sentence, target_sentence in pick_n_valid_sentences(input_lang, output_lang, 10):
+            decoded_words = evaluate(searcher, input_sentence, input_lang, output_lang)
+            print('> {}'.format(input_sentence))
+            print('= {}'.format(target_sentence))
+            print('< {}'.format(''.join(decoded_words)))
 
         np.random.shuffle(train_data.samples)
         np.random.shuffle(val_data.samples)

@@ -123,15 +123,19 @@ class GreedySearchDecoder(nn.Module):
         return all_tokens, all_scores
 
 
-def pick_n_valid_sentences(input_lang, n):
+def pick_n_valid_sentences(input_lang, output_lang, n):
     samples_path = 'data/samples_train.json'
     samples = json.load(open(samples_path, 'r'))
     train_count = int(len(samples) * train_split)
     samples = samples[train_count:]
     # samples = samples[:train_count]
     samples = random.sample(samples, n)
-    return [' '.join([input_lang.index2word[token] for token in sample['input'] if token != EOS_token]) for sample in
-            samples]
+    result = []
+    for sample in samples:
+        input_sentence = ' '.join([input_lang.index2word[token] for token in sample['input'] if token != EOS_token])
+        target_sentence = ''.join([output_lang.index2word[token] for token in sample['output'] if token != EOS_token])
+        result.append((input_sentence, target_sentence))
+    return result
 
 
 def timestamp():
