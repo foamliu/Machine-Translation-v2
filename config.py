@@ -24,11 +24,11 @@ model_name = 'cb_model'
 attn_model = 'general'
 start_epoch = 0
 epochs = 120
-hidden_size = 500
-encoder_n_layers = 2
-decoder_n_layers = 2
+hidden_size = 1024
+encoder_n_layers = 3
+decoder_n_layers = 3
 dropout = 0.05
-batch_size = 200
+batch_size = 100
 train_split = 0.9
 
 train_folder = 'data/ai_challenger_translation_train_20170912'
