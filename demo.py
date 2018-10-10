@@ -1,7 +1,6 @@
 # import the necessary packages
 
-import keras.backend as K
-
+from models import EncoderRNN, LuongAttnDecoderRNN
 from utils import *
 
 if __name__ == '__main__':
@@ -14,11 +13,24 @@ if __name__ == '__main__':
     print('checkpoint: ' + str(checkpoint))
     # Load model
     checkpoint = torch.load(checkpoint)
-    encoder = checkpoint['en']
+    encoder_sd = checkpoint['en']
+    decoder_sd = checkpoint['de']
+
+    print('Building encoder and decoder ...')
+    # Initialize encoder & decoder models
+    encoder = EncoderRNN(input_lang.n_words, hidden_size, encoder_n_layers, dropout)
+    decoder = LuongAttnDecoderRNN(attn_model, hidden_size, output_lang.n_words, decoder_n_layers, dropout)
+
+    encoder.load_state_dict(encoder_sd)
+    decoder.load_state_dict(decoder_sd)
+
+    # Use appropriate device
     encoder = encoder.to(device)
-    encoder.eval()
-    decoder = checkpoint['de']
     decoder = decoder.to(device)
+    print('Models built and ready to go!')
+
+    # Set dropout layers to eval mode
+    encoder.eval()
     decoder.eval()
 
     # Initialize search module
@@ -28,5 +40,3 @@ if __name__ == '__main__':
         print('> {}'.format(input_sentence))
         print('= {}'.format(target_sentence))
         print('< {}'.format(''.join(decoded_words)))
-
-    K.clear_session()
