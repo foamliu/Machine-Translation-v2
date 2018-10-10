@@ -1,75 +1,32 @@
 # import the necessary packages
-import os
-import pickle
-import random
 
 import keras.backend as K
-import nltk
-import numpy as np
-from gensim.models import KeyedVectors
 
-from config import *
-from models import EncoderRNN, AttnDecoderRNN
+from utils import *
 
 if __name__ == '__main__':
-    channel = 3
+    input_lang = Lang('data/WORDMAP_en.json')
+    output_lang = Lang('data/WORDMAP_zh.json')
+    print("input_lang.n_words: " + str(input_lang.n_words))
+    print("output_lang.n_words: " + str(output_lang.n_words))
 
-    model_weights_path = 'models/model.01-10.3439.hdf5'
-    model = build_model()
-    model.load_weights(model_weights_path)
+    checkpoint = '{}/BEST_checkpoint.tar'.format(save_dir)  # model checkpoint
+    print('checkpoint: ' + str(checkpoint))
+    # Load model
+    checkpoint = torch.load(checkpoint)
+    encoder = checkpoint['en']
+    encoder = encoder.to(device)
+    encoder.eval()
+    decoder = checkpoint['de']
+    decoder = decoder.to(device)
+    decoder.eval()
 
-    print('loading fasttext word embedding(en)')
-    word_vectors_en = KeyedVectors.load_word2vec_format('data/wiki.en.vec')
-
-    vocab_zh = pickle.load(open('data/vocab_train_zh.p', 'rb'))
-    idx2word_zh = vocab_zh
-    print('len(idx2word_zh): ' + str(len(idx2word_zh)))
-    word2idx_zh = dict(zip(idx2word_zh, range(len(vocab_zh))))
-    print('vocab_size_zh: ' + str(vocab_size_zh))
-
-    print(model.summary())
-
-    translation_path_en = os.path.join(valid_translation_folder, valid_translation_en_filename)
-    translation_path_zh = os.path.join(valid_translation_folder, valid_translation_zh_filename)
-    filename = 'data/samples_valid.p'
-
-    print('loading valid texts and vocab')
-    with open(translation_path_en, 'r') as f:
-        data_en = f.readlines()
-
-    with open(translation_path_zh, 'r') as f:
-        data_zh = f.readlines()
-
-    indices = range(len(data_en))
-
-    length = 10
-    samples = random.sample(indices, length)
-
-    for i in range(length):
-        idx = samples[i]
-        sentence_en = data_en[idx]
-        print(sentence_en)
-        tokens = nltk.word_tokenize(sentence_en)
-        x = np.zeros((1, Tx, embedding_size), np.float32)
-        for j, word in enumerate(tokens):
-            try:
-                x[0, j] = word_vectors_en[word]
-            except KeyError:
-                word = unknown_word
-                x[0, j] = unknown_embedding
-
-        x[0, len(tokens)] = stop_embedding
-
-        preds = model.predict(x)
-        print('preds.shape: ' + str(preds.shape))
-
-        output_zh = []
-        for t in range(Ty):
-            idx = np.argmax(preds[0][t])
-            word_pred = idx2word_zh[idx]
-            output_zh.append(word_pred)
-            if word_pred == stop_word:
-                break
-        print(' '.join(output_zh))
+    # Initialize search module
+    searcher = GreedySearchDecoder(encoder, decoder)
+    for input_sentence, target_sentence in pick_n_valid_sentences(input_lang, output_lang, 10):
+        decoded_words = evaluate(searcher, input_sentence, input_lang, output_lang)
+        print('> {}'.format(input_sentence))
+        print('= {}'.format(target_sentence))
+        print('< {}'.format(''.join(decoded_words)))
 
     K.clear_session()

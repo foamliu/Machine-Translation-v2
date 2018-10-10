@@ -117,26 +117,6 @@ def valid(input_variable, lengths, target_variable, mask, max_target_len, encode
     return sum(print_losses) / n_totals
 
 
-def evaluate(searcher, sentence, input_lang, output_lang, max_length=max_len):
-    with torch.no_grad():
-        ### Format input sentence as a batch
-        # words -> indexes
-        indexes_batch = [indexesFromSentence(input_lang, sentence)]
-        # Create lengths tensor
-        lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
-        # Transpose dimensions of batch to match models' expectations
-        input_batch = torch.LongTensor(indexes_batch).transpose(0, 1)
-        # Use appropriate device
-        input_batch = input_batch.to(device)
-        lengths = lengths.to(device)
-        # Decode sentence with searcher
-        tokens, scores = searcher(input_batch, lengths, max_length)
-        # indexes -> words
-        decoded_words = [output_lang.index2word[token.item()] for token in tokens
-                         if token != EOS_token and token != PAD_token]
-    return decoded_words
-
-
 def main():
     input_lang = Lang('data/WORDMAP_en.json')
     output_lang = Lang('data/WORDMAP_zh.json')

@@ -140,6 +140,26 @@ class GreedySearchDecoder(nn.Module):
         return all_tokens, all_scores
 
 
+def evaluate(searcher, sentence, input_lang, output_lang, max_length=max_len):
+    with torch.no_grad():
+        ### Format input sentence as a batch
+        # words -> indexes
+        indexes_batch = [indexesFromSentence(input_lang, sentence)]
+        # Create lengths tensor
+        lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
+        # Transpose dimensions of batch to match models' expectations
+        input_batch = torch.LongTensor(indexes_batch).transpose(0, 1)
+        # Use appropriate device
+        input_batch = input_batch.to(device)
+        lengths = lengths.to(device)
+        # Decode sentence with searcher
+        tokens, scores = searcher(input_batch, lengths, max_length)
+        # indexes -> words
+        decoded_words = [output_lang.index2word[token.item()] for token in tokens
+                         if token != EOS_token and token != PAD_token]
+    return decoded_words
+
+
 def pick_n_valid_sentences(input_lang, output_lang, n):
     samples_path = 'data/samples_train.json'
     samples = json.load(open(samples_path, 'r'))
