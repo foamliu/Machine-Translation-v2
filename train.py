@@ -25,16 +25,21 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
 
     # Forward pass through encoder
     encoder_outputs, encoder_hidden = encoder(input_variable, lengths)
+    # print('encoder_outputs.size(): ' + str(encoder_outputs.size()))
+    # print('encoder_hidden.size(): ' + str(encoder_hidden.size()))
 
     # Create initial decoder input (start with SOS tokens for each sentence)
     decoder_input = torch.LongTensor([[SOS_token for _ in range(batch_size)]])
     decoder_input = decoder_input.to(device)
+    # print('decoder_input.size(): ' + str(decoder_input.size()))
 
     # Set initial decoder hidden state to the encoder's final hidden state
     decoder_hidden = encoder_hidden[:decoder.n_layers]
+    # print('decoder_hidden.size(): ' + str(decoder_hidden.size()))
 
     # Determine if we are using teacher forcing this iteration
     use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
+    # print('use_teacher_forcing: ' + str(use_teacher_forcing))
 
     # Forward batch of sequences through decoder one time step at a time
     if use_teacher_forcing:

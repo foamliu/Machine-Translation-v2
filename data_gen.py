@@ -1,8 +1,9 @@
 # encoding=utf-8
 import itertools
 
-from torch.utils.data import Dataset
 import numpy as np
+from torch.utils.data import Dataset
+
 from config import *
 
 samples_path = 'data/samples_train.json'
@@ -71,25 +72,28 @@ class TranslationDataset(Dataset):
         else:
             self.samples = samples[train_count:]
 
-        print('count: ' + str(len(self.samples) // batch_size * batch_size))
+        self.num_batches = len(self.samples) // batch_size
         np.random.shuffle(self.samples)
 
+        print('count: ' + str(len(self.samples)))
+
     def __getitem__(self, i):
+        start_idx = i * batch_size
         pair_batch = []
 
         for i_batch in range(batch_size):
-            sample = self.samples[i + i_batch]
+            sample = self.samples[start_idx + i_batch]
             pair_batch.append((sample['input'], sample['output']))
 
         return batch2TrainData(pair_batch)
 
     def __len__(self):
-        return len(self.samples) // batch_size
+        return self.num_batches
 
 
 if __name__ == '__main__':
-    print('loading {} samples'.format('valid'))
-    samples_path = 'data/samples_valid.json'
+    print('loading {} samples'.format('train'))
+    samples_path = 'data/samples_train.json'
     samples = json.load(open(samples_path, 'r'))
     pair_batch = []
     for i in range(5):
