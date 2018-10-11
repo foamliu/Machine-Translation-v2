@@ -29,11 +29,6 @@ $ python pre-process.py
 $ python train.py
 ```
 
-要想可视化训练过程，在终端中运行：
-```bash
-$ tensorboard --logdir path_to_current_dir/logs
-```
-
 ### Demo
 下载 [预训练模型](https://github.com/foamliu/Machine-Translation/releases/download/v1.0/BEST_checkpoint.tar) 放在 models 目录然后执行:
 
