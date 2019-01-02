@@ -37,6 +37,8 @@ $ python train.py
 $ python demo.py
 ```
 
+下面第一行是英文例句（数据集），第二行是人翻中文例句（数据集），第三行是机翻（本模型）中文句子（实时生成）。
+
 <pre>
 > we have a house to find  .
 = 有房子要找。
